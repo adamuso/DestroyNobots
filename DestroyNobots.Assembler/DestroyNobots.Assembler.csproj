@@ -65,7 +65,7 @@
     <Compile Include="SafeMemory.cs" />
     <Compile Include="UnsafeHGlobalMemory.cs" />
     <Compile Include="AssemblerOpcodeSet.cs" />
-    <Compile Include="Parser\AssemblerParameters.cs" />
+    <Compile Include="AssemblerParameters.cs" />
     <Compile Include="Parser\MathParser.cs" />
     <Compile Include="Pointer.cs" />
     <Compile Include="Program.cs" />

@@ -10,11 +10,11 @@ namespace DestroyNobots.Assembler
     public class AssemblerInstruction
     {
         InstructionAction action;
-        Parser.AssemblerParameters[] parameters;
+        AssemblerParameters[] parameters;
         bool pointerOffset;
 
         public int ParametersCount { get { return parameters?.Length ?? 0; } }
-        public Parser.AssemblerParameters[] Parameters { get { return parameters; } }
+        public AssemblerParameters[] Parameters { get { return parameters; } }
         public bool PointerOffset { get { return pointerOffset; } }
 
         public AssemblerInstruction(InstructionAction action, bool pointerOffset = true)
@@ -24,7 +24,7 @@ namespace DestroyNobots.Assembler
             parameters = null;
         }
 
-        public AssemblerInstruction SetParameters(params Parser.AssemblerParameters[] parameters)
+        public AssemblerInstruction SetParameters(params AssemblerParameters[] parameters)
         {
             this.parameters = parameters;
             return this;
