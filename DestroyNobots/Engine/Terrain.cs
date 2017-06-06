@@ -124,6 +124,7 @@ namespace DestroyNobots.Engine
 
             for (int i = 0; i < vertices.Length; i++)
             {
+                //vertices[i].Normal /= verticesNormalsCount[i];
                 vertices[i].Normal.Normalize();
             }
 
