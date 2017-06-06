@@ -1,0 +1,12 @@
+﻿mov data, 20, dword 
+jmp func 
+
+data: 
+reserve 1, dword 
+data2:
+memory "lolxd", "frajer!", 0
+
+func:
+print data2
+mov r2, data 
+print r2

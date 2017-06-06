@@ -1,0 +1,176 @@
+﻿using DestroyNobots.Assembler.Emulator.Registers;
+using DestroyNobots.Assembler.Parser;
+using System;
+using System.Collections.Generic;
+
+namespace DestroyNobots.Assembler.Emulator
+{
+    public abstract class Processor<T> : IProcessorBase
+        where T : struct, IConvertible
+    {
+        public const int WORD_SIZE = 32;
+        public const int REGISTER_BITS = 5;
+        public const int NUMBER_OF_REGISTERS = 1 << REGISTER_BITS;
+
+        bool abort;
+        int flags;
+
+        int stackMemory;
+        int stackSize;
+        private ProgramMemoryReader programMemoryReader;
+
+        internal Dictionary<byte, AssemblerInstruction> Instructions { get; private set; } // opcodes as keys
+        public Registers.Register<T>[] Registers { get; private set; }
+        internal AssemblerCompiler Parser { get; private set; }
+        internal InterruptAction InterruptAction { get; private set; }
+
+        public ProgramCounter<T> ProgramCounter { get; private set; }
+        public StackPointer<T> StackPointer { get; private set; }
+
+        public bool Running { get; private set; }
+
+        public Computer Computer { get; set; }
+
+        public Processor(Dictionary<byte, AssemblerInstruction> instructions)
+        {
+            this.Computer = null;
+            Registers = new Registers.Register<T>[RegistersCount];
+            Instructions = instructions; // new Dictionary<byte, AssemblerInstruction>();
+
+            foreach(var entry in instructions)
+            {
+                
+            }
+
+            InterruptAction = null;
+            flags = 0;
+            abort = false;
+
+            for (int r = 0; r < RegistersCount; r++)
+                Registers[r] = new Registers.Register<T>();
+
+            StackPointer = new StackPointer<T>(this, Registers[StackPointerRegisterNumber], 0, 0);
+            ProgramCounter = new ProgramCounter<T>(this, Registers[ProgramCountRegisterNumber]);
+        }
+
+        public void Run()
+        {
+            Running = true;
+            RunProgram();
+        }
+
+        public bool Step()
+        {
+            Running = true;
+            RunProgram(true);
+
+            if (!Running)
+                return false;
+
+            return true;
+        }
+
+        public void Pause()
+        {
+            Running = false;
+        }
+
+        public void Abort()
+        {
+            abort = true;
+        }
+
+        public void Reset()
+        {
+            abort = false;
+        }
+
+        protected int DecodeAddress(int undecode)
+        {
+            int minus = undecode & 0x1;
+
+            if (minus == 1)
+                return -(undecode >> 1);
+
+            return undecode >> 1;
+        }
+
+        public bool GetFlag(FlagType type)
+        {
+            return (flags & (0x1 << (int)type)) != 0;
+        }
+
+        public void SetFlag(FlagType type, bool val)
+        {
+            if (val)
+                flags |= (0x1 << (int)type);
+            else
+                flags &= ~(0x1 << (int)type);
+        }
+
+        protected void RegisterInstruction(byte opcode, AssemblerInstruction instruction)
+        {
+            Instructions.Add(opcode, instruction);
+        }
+
+        protected void RegisterInterruptAction(InterruptAction action)
+        {
+            InterruptAction = action;
+        }
+
+        private void RunProgram(bool step = false)
+        {
+            int instruction = -1;
+
+            while (instruction != 0 && Running)
+            {
+                if (abort)
+                {
+                    Running = false;
+                    break;
+                }
+
+                instruction = Computer.Memory.Read<int>(ProgramCounter.Address);
+
+                if (instruction == 0 || instruction == -1)
+                {
+                    Running = false;
+                    break;
+                }
+
+                byte opcode = (byte)(instruction & 0xFF); //Memory.read<byte>((ushort)current.Value);
+                byte paramstypes = (byte)(instruction & 0xFF00); // Memory.read<byte>((ushort)current.Value + 1);
+                uint mem = ProgramCounter.Address + 2;
+
+                AssemblerInstruction asm = Instructions[opcode];
+                int[] param = new int[asm.ParametersCount];
+
+                for (int i = 0; i < asm.ParametersCount; i++)
+                {
+                    byte pt = (byte)((paramstypes & (0x03 << i * 2)) >> i * 2);
+
+                    if (asm.Parameters[i] == AssemblerParameters.REGISTER)
+                        param[i] = programMemoryReader.ReadRegister(ref mem, pt);
+                    else if (asm.Parameters[i] == AssemblerParameters.VALUE)
+                        param[i] = programMemoryReader.ReadValue(ref mem, pt);
+                    else if (asm.Parameters[i] == AssemblerParameters.POINTER)
+                        param[i] = programMemoryReader.ReadPointer(ref mem, pt);
+                }
+
+                ProgramCounter.Set(mem);
+
+                asm.Eval(Computer, param);
+
+                if (step)
+                    break;
+            }
+        }
+
+
+        public abstract byte ProgramCountRegisterNumber { get; }
+        public abstract byte StackPointerRegisterNumber { get; }
+        public abstract byte RegistersCount { get; }
+
+        public abstract void Update();
+    }
+}

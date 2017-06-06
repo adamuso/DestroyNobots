@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8B5D4394-F83F-4554-8395-4FA7033FEF7C}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DestroyNobots.Assembler</RootNamespace>
+    <AssemblyName>DestroyNobots.Assembler</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblerInstruction.cs" />
+    <Compile Include="BinaryMultiplier.cs" />
+    <Compile Include="Computer.cs" />
+    <Compile Include="Emulator\Computer.cs" />
+    <Compile Include="Emulator\IProcessorBase.cs" />
+    <Compile Include="Emulator\RAMMemory.cs" />
+    <Compile Include="Emulator\Registers\Register.cs" />
+    <Compile Include="Emulator\Registers\StackPointer.cs" />
+    <Compile Include="FlagType.cs" />
+    <Compile Include="IMemory.cs" />
+    <Compile Include="Emulator\Peripherals\HardDrive.cs" />
+    <Compile Include="Emulator\Peripherals\Monitor.cs" />
+    <Compile Include="Emulator\Peripherals\Peripheral.cs" />
+    <Compile Include="Emulator\Processor.cs" />
+    <Compile Include="Emulator\Registers\ProgramCounter.cs" />
+    <Compile Include="IRuntimeContext.cs" />
+    <Compile Include="ProgramMemoryReader.cs" />
+    <Compile Include="SafeMemory.cs" />
+    <Compile Include="UnsafeHGlobalMemory.cs" />
+    <Compile Include="Parser\AssemblerInstruction.cs" />
+    <Compile Include="Parser\AssemblerOpcodeSet.cs" />
+    <Compile Include="Parser\AssemblerParameters.cs" />
+    <Compile Include="Parser\AssemblerCompiler.cs" />
+    <Compile Include="Parser\MathParser.cs" />
+    <Compile Include="Pointer.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Register.cs" />
+    <Compile Include="StandardComputer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="AsmTest.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Compiler\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
