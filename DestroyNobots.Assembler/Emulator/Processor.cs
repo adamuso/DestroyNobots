@@ -21,8 +21,7 @@ namespace DestroyNobots.Assembler.Emulator
 
         public Dictionary<byte, AssemblerInstruction> InstructionSet { get; private set; } // opcodes as keys
         public Registers.Register<T>[] Registers { get; private set; }
-        internal AssemblerParser Parser { get; private set; }
-        internal InterruptAction InterruptAction { get; private set; }
+        //internal InterruptAction InterruptAction { get; private set; }
 
         public ProgramCounter<T> ProgramCounter { get; private set; }
         public StackPointer<T> StackPointer { get; private set; }
@@ -42,7 +41,7 @@ namespace DestroyNobots.Assembler.Emulator
                 
             }
 
-            InterruptAction = null;
+            //InterruptAction = null;
             flags = 0;
             abort = false;
 
@@ -115,10 +114,10 @@ namespace DestroyNobots.Assembler.Emulator
             InstructionSet.Add(opcode, instruction);
         }
 
-        protected void RegisterInterruptAction(InterruptAction action)
-        {
-            InterruptAction = action;
-        }
+        //protected void RegisterInterruptAction(InterruptAction action)
+        //{
+        //    InterruptAction = action;
+        //}
 
         private void RunProgram(bool step = false)
         {

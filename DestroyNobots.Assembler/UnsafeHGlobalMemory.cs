@@ -60,11 +60,6 @@ namespace DestroyNobots.Assembler
             }
         }
 
-        public ulong getWordSize()
-        {
-            return Computer.WORD_SIZE;
-        }
-
         public void Dispose()
         {
             Marshal.FreeHGlobal(memory);
