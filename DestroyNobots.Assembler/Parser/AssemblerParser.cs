@@ -5,7 +5,7 @@ using System.Text;
 
 namespace DestroyNobots.Assembler.Parser
 {
-    public class AssemblerCompiler
+    public class AssemblerParser
     {
         Computer computer;
         Dictionary<string, AssemblerOpcodeSet> instructions;
@@ -16,7 +16,7 @@ namespace DestroyNobots.Assembler.Parser
         // parser info
         int line;
 
-        public AssemblerCompiler(Computer computer)
+        public AssemblerParser(Computer computer)
         {
             this.computer = computer;
             instructions = new Dictionary<string, AssemblerOpcodeSet>();
@@ -29,7 +29,7 @@ namespace DestroyNobots.Assembler.Parser
         public void SetInstruction(string name, byte opcode, InstructionAction action, int params_number, bool label_offset, params AssemblerParameters[] parameters)
         {
             if (!instructions.ContainsKey(name.ToLower()))
-                instructions[name.ToLower()] = new AssemblerOpcodeSet(computer);
+                instructions[name.ToLower()] = null; // new AssemblerOpcodeSet(computer);
 
             instructions[name.ToLower()].Add(opcode);
 

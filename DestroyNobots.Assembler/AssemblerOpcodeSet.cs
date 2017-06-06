@@ -1,19 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 
-namespace DestroyNobots.Assembler.Parser
+namespace DestroyNobots.Assembler
 {
     public class AssemblerOpcodeSet
     {
-        Computer computer;
+        IInstructionSetProvider instructionSetProvider;
         List<byte> opcodes;
         byte _default;
 
-        public AssemblerOpcodeSet(Computer computer)
+        public AssemblerOpcodeSet(IInstructionSetProvider instructionSetProvider)
         {
-            this.computer = computer;
+            this.instructionSetProvider = instructionSetProvider;
             this.opcodes = new List<byte>();
         }
 
@@ -22,11 +19,11 @@ namespace DestroyNobots.Assembler.Parser
             opcodes.Add(opcode);
         }
 
-        public byte Find(params AssemblerParameters[] parameters)
+        public byte Find(params Parser.AssemblerParameters[] parameters)
         {
             for (int i = 0; i < opcodes.Count; i++)
             {
-                AssemblerInstruction ins = computer.Instructions[opcodes[i]];
+                AssemblerInstruction ins = instructionSetProvider.InstructionSet[opcodes[i]];
 
                 if (ins.ParametersCount != parameters.Length)
                     continue;
@@ -36,7 +33,7 @@ namespace DestroyNobots.Assembler.Parser
                 for (int j = 0; j < parameters.Length; j++)
                 {
                     // if parameter does not have pointer flag
-                    if ((parameters[j] & AssemblerParameters.POINTER) == 0)
+                    if ((parameters[j] & Parser.AssemblerParameters.POINTER) == 0)
                     {
                         if (parameters[j] != ins.Parameters[j])
                         {
@@ -46,7 +43,7 @@ namespace DestroyNobots.Assembler.Parser
                     }
                     else
                     {
-                        if (AssemblerParameters.POINTER != ins.Parameters[j])
+                        if (Parser.AssemblerParameters.POINTER != ins.Parameters[j])
                         {
                             found = false;
                             break;

@@ -1,14 +1,16 @@
-﻿using System;
+﻿using DestroyNobots.Assembler.Emulator;
+using System;
 
 namespace DestroyNobots.Assembler
 {
-    internal class ProgramMemoryReader
+    internal class ProgramMemoryReader<T> where T : struct, IConvertible
     {
-        private Computer computer;
+        private Processor<T> processor;
         private IMemory memory;
 
-        public ProgramMemoryReader(Computer computer, IMemory memory)
+        public ProgramMemoryReader(Processor<T> processor, IMemory memory)
         {
+            this.processor = processor;
             this.memory = memory;
         }
 
@@ -65,7 +67,7 @@ namespace DestroyNobots.Assembler
             }
             else if (pt == 0x01)
             {
-                output = computer.Registers[memory.Read<byte>(mem)].Value;
+                output = processor.Registers[memory.Read<byte>(mem)].Value.ToInt32(null);
                 mem += 1;
             }
 

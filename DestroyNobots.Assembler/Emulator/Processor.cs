@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace DestroyNobots.Assembler.Emulator
 {
-    public abstract class Processor<T> : IProcessorBase
+    public abstract class Processor<T> : IProcessorBase, IInstructionSetProvider
         where T : struct, IConvertible
     {
         public const int WORD_SIZE = 32;
@@ -17,11 +17,11 @@ namespace DestroyNobots.Assembler.Emulator
 
         int stackMemory;
         int stackSize;
-        private ProgramMemoryReader programMemoryReader;
+        private ProgramMemoryReader<T> programMemoryReader;
 
-        internal Dictionary<byte, AssemblerInstruction> Instructions { get; private set; } // opcodes as keys
+        public Dictionary<byte, AssemblerInstruction> InstructionSet { get; private set; } // opcodes as keys
         public Registers.Register<T>[] Registers { get; private set; }
-        internal AssemblerCompiler Parser { get; private set; }
+        internal AssemblerParser Parser { get; private set; }
         internal InterruptAction InterruptAction { get; private set; }
 
         public ProgramCounter<T> ProgramCounter { get; private set; }
@@ -35,7 +35,7 @@ namespace DestroyNobots.Assembler.Emulator
         {
             this.Computer = null;
             Registers = new Registers.Register<T>[RegistersCount];
-            Instructions = instructions; // new Dictionary<byte, AssemblerInstruction>();
+            InstructionSet = instructions; // new Dictionary<byte, AssemblerInstruction>();
 
             foreach(var entry in instructions)
             {
@@ -108,9 +108,11 @@ namespace DestroyNobots.Assembler.Emulator
                 flags &= ~(0x1 << (int)type);
         }
 
+        public abstract AssemblerCompiler GetAssociatedCompiler();
+
         protected void RegisterInstruction(byte opcode, AssemblerInstruction instruction)
         {
-            Instructions.Add(opcode, instruction);
+            InstructionSet.Add(opcode, instruction);
         }
 
         protected void RegisterInterruptAction(InterruptAction action)
@@ -120,6 +122,9 @@ namespace DestroyNobots.Assembler.Emulator
 
         private void RunProgram(bool step = false)
         {
+            if(programMemoryReader == null)
+                programMemoryReader = new Assembler.ProgramMemoryReader<T>(this, Computer.Memory);
+
             int instruction = -1;
 
             while (instruction != 0 && Running)
@@ -142,7 +147,7 @@ namespace DestroyNobots.Assembler.Emulator
                 byte paramstypes = (byte)(instruction & 0xFF00); // Memory.read<byte>((ushort)current.Value + 1);
                 uint mem = ProgramCounter.Address + 2;
 
-                AssemblerInstruction asm = Instructions[opcode];
+                AssemblerInstruction asm = InstructionSet[opcode];
                 int[] param = new int[asm.ParametersCount];
 
                 for (int i = 0; i < asm.ParametersCount; i++)

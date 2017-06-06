@@ -1,6 +1,8 @@
 ﻿namespace DestroyNobots.Engine.Entities.Vehicles
 {
-    class Vehicle : Robot
+    public class Vehicle : Robot
     {
+        protected float power;
+        protected float rotation;
     }
 }

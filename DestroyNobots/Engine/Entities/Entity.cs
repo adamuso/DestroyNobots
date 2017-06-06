@@ -13,7 +13,7 @@ namespace DestroyNobots.Engine.Entities
 
         }
 
-        public virtual void Render(GameTime gt)
+        public virtual void Draw(GameTime gt)
         {
 
         }

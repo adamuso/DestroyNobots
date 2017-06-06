@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssemblerCompiler.cs" />
     <Compile Include="AssemblerInstruction.cs" />
     <Compile Include="BinaryMultiplier.cs" />
     <Compile Include="Computer.cs" />
@@ -53,6 +54,7 @@
     <Compile Include="Emulator\Registers\Register.cs" />
     <Compile Include="Emulator\Registers\StackPointer.cs" />
     <Compile Include="FlagType.cs" />
+    <Compile Include="IInstructionSetProvider.cs" />
     <Compile Include="IMemory.cs" />
     <Compile Include="Emulator\Peripherals\HardDrive.cs" />
     <Compile Include="Emulator\Peripherals\Monitor.cs" />
@@ -64,9 +66,9 @@
     <Compile Include="SafeMemory.cs" />
     <Compile Include="UnsafeHGlobalMemory.cs" />
     <Compile Include="Parser\AssemblerInstruction.cs" />
-    <Compile Include="Parser\AssemblerOpcodeSet.cs" />
+    <Compile Include="AssemblerOpcodeSet.cs" />
     <Compile Include="Parser\AssemblerParameters.cs" />
-    <Compile Include="Parser\AssemblerCompiler.cs" />
+    <Compile Include="Parser\AssemblerParser.cs" />
     <Compile Include="Parser\MathParser.cs" />
     <Compile Include="Pointer.cs" />
     <Compile Include="Program.cs" />

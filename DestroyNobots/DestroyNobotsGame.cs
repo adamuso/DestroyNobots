@@ -1,8 +1,10 @@
 ﻿using DestroyNobots.Engine;
+using DestroyNobots.Engine.Entities;
+using DestroyNobots.Engine.Entities.Vehicles;
+using DestroyNobots.Screens;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using System;
 
 namespace DestroyNobots
 {
@@ -12,13 +14,40 @@ namespace DestroyNobots
     public class DestroyNobotsGame : Game
     {
         GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
+        Screen currentScreen;
+
+        public TimerManager TimerManager { get; private set; }
+        public SpriteBatch SpriteBatch { get; private set; }
+        public EntityManager EntityManager { get; private set; }
+        public TextureManager TextureManager { get; private set; }
+        public Camera Camera { get; private set; }
 
         public DestroyNobotsGame()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
         }
+
+        public void SwitchScreen<T>() where T : Screen, new()
+        {
+            SwitchScreen(new T());
+        }
+
+        public void SwitchScreen(Screen newScreen)
+        {
+            if (currentScreen != null)
+                currentScreen.Unload();
+
+            currentScreen = newScreen;
+
+            if (currentScreen != null)
+            {
+                currentScreen.Game = this;
+                currentScreen.Load();
+            }
+        }
+
+        Buggy b;
 
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
@@ -28,11 +57,25 @@ namespace DestroyNobots
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
-
             base.Initialize();
 
+            IsFixedTimeStep = false;
             IsMouseVisible = true;
+
+            TimerManager = new TimerManager();
+            EntityManager = new EntityManager() { Game = this };
+            Camera = new Camera();
+
+            Services.AddService(TimerManager);
+            Services.AddService(EntityManager);
+            Services.AddService(TextureManager);
+
+            b = EntityManager.Create<Buggy>();
+            byte[] code = b.Computer.Processor.GetAssociatedCompiler().Compile(System.IO.File.Open("BuggyCode.txt", System.IO.FileMode.Open));
+            var memory = new Assembler.SafeMemory(code.Length, Assembler.BinaryMultiplier.B);
+            memory.Write(0, code);
+            b.Computer.SwitchROM(memory);
+            b.Computer.PowerUp();
         }
 
         /// <summary>
@@ -41,17 +84,17 @@ namespace DestroyNobots
         /// </summary>
         protected override void LoadContent()
         {
-            // Create a new SpriteBatch, which can be used to draw textures.
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            TextureManager = new TextureManager(this);
+
+            SpriteBatch = new SpriteBatch(GraphicsDevice);
+            TextureManager.Load();
+
+            SwitchScreen<GameScreen>();
         }
 
-        /// <summary>
-        /// UnloadContent will be called once per game and is the place to unload
-        /// game-specific content.
-        /// </summary>
         protected override void UnloadContent()
         {
-            // TODO: Unload any non ContentManager content here
+            TextureManager.Unload();
         }
 
         /// <summary>
@@ -63,7 +106,11 @@ namespace DestroyNobots
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-            
+
+            b.Computer.Step();
+            TimerManager.Update(gameTime);
+            currentScreen.Update(gameTime);
+
             base.Update(gameTime);
         }
 
@@ -74,6 +121,8 @@ namespace DestroyNobots
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
+
+            currentScreen.Draw(gameTime);
 
             base.Draw(gameTime);
         }

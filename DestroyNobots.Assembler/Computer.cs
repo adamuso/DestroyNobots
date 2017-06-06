@@ -22,11 +22,11 @@ namespace DestroyNobots.Assembler
 
         int stackMemory;
         int stackSize;
-        private ProgramMemoryReader programMemoryReader;
+        private ProgramMemoryReader<int> programMemoryReader;
 
         internal Dictionary<byte, Parser.AssemblerInstruction> Instructions { get; private set; } // opcodes as keys
         public Register<int>[] Registers { get; private set; }
-        internal AssemblerCompiler Parser { get; private set; }
+        internal AssemblerParser Parser { get; private set; }
         internal InterruptAction InterruptAction { get; private set; }
 
         public IMemory Memory { get; private set; }
@@ -52,7 +52,7 @@ namespace DestroyNobots.Assembler
 
             PrepareMemory(8, BinaryMultiplier.KB);
 
-            this.Parser = new AssemblerCompiler(this);
+            this.Parser = new AssemblerParser(this);
             Init();
 
             Parser.SetRegister("sp", StackPointerRegisterNumber);
@@ -76,7 +76,7 @@ namespace DestroyNobots.Assembler
 
             int programMemory;
             Memory = new SafeMemory(size, multiplier);
-            programMemoryReader = new ProgramMemoryReader(this, Memory);
+            programMemoryReader = null;// new ProgramMemoryReader<int>(this, Memory);
             InitMemory(out programMemory, out stackMemory, out stackSize);
 
             ProgramMemory = programMemory;

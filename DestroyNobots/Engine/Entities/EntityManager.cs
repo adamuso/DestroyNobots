@@ -4,7 +4,7 @@ using System;
 
 namespace DestroyNobots.Engine.Entities
 {
-    class EntityManager : IRenderable, IUpdateable
+    public class EntityManager : IRenderable, IUpdateable
     {
         LinkedList<Entity> entities;
         public DestroyNobotsGame Game { get; set; }
@@ -22,13 +22,13 @@ namespace DestroyNobots.Engine.Entities
             return entity;
         }
 
-        public void Render(GameTime gt)
+        public void Draw(GameTime gt)
         {
             var entityContainer = entities.First;
 
             while(entityContainer != null)
             {
-                entityContainer.Value.Render(gt);
+                entityContainer.Value.Draw(gt);
 
                 entityContainer = entityContainer.Next;
             }

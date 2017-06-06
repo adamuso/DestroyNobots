@@ -269,14 +269,14 @@ namespace DestroyNobots.Computers
             { 0x17, new AssemblerInstruction((instruction, context, parameters) => // br
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    processor.Registers[31].Value += parameters[0];
+                    processor.ProgramCounter.Jump(parameters[0]);
                 }
             )},
 
             { 0x18, new AssemblerInstruction((instruction, context, parameters) => // jmp
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    processor.Registers[31].Value += parameters[0];
+                    processor.ProgramCounter.Branch(parameters[0]);
                 }
             )},
             #endregion

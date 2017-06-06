@@ -65,7 +65,7 @@ namespace DestroyNobots.Assembler.Emulator
                 physicalMemory.PowerUp();
 
                 if(rom != null)
-                    Memory.Write(0, rom.Read(rom.MemorySize));
+                    Memory.Write(0, rom.Read(0, (uint)rom.MemorySize));
 
                 Processor.Reset();
             }

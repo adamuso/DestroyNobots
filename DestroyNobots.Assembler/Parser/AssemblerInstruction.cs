@@ -9,17 +9,17 @@ namespace DestroyNobots.Assembler.Parser
 
     public class AssemblerInstruction
     {
-        AssemblerCompiler compiler;
+        AssemblerParser compiler;
         InstructionAction action;
         AssemblerParameters[] parameters;
         bool labelOffset;
 
-        public AssemblerCompiler Compiler { get { return compiler; } }
+        public AssemblerParser Compiler { get { return compiler; } }
         public int ParametersCount { get { return parameters?.Length ?? 0; } }
         public AssemblerParameters[] Parameters { get { return parameters; } }
         public bool LabelOffset { get { return labelOffset; } }
 
-        public AssemblerInstruction(AssemblerCompiler compiler, InstructionAction action, bool labelOffset = true)
+        public AssemblerInstruction(AssemblerParser compiler, InstructionAction action, bool labelOffset = true)
         {
             this.compiler = compiler;
             this.action = action;

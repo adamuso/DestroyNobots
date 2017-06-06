@@ -16,23 +16,28 @@ namespace DestroyNobots.Assembler.Emulator.Registers
 
         public void Set(int address)
         {
-            register.Value = (T)(object)address;
+            register.Value = (T)Convert.ChangeType(address, typeof(T));
         }
 
         public void Set(uint address)
         {
-            register.Value = (T)(object)address;
+            register.Value = (T)Convert.ChangeType(address, typeof(T));
+        }
+
+        public void Branch(int address)
+        {
+            register.Value = (T)Convert.ChangeType(register.Value.ToUInt32(null) + address, typeof(T));
         }
 
         public void Jump(Pointer address)
         {
-            register.Value = (T)(object)(uint)address; 
+            register.Value = (T)Convert.ChangeType(address, typeof(T));
         }
 
         public void Call(Pointer address)
         {
             processor.StackPointer.Push(register.Value);
-            register.Value = (T)(object)(uint)address;
+            register.Value = (T)Convert.ChangeType(address, typeof(T));
         }
 
         public void Return()
@@ -40,6 +45,6 @@ namespace DestroyNobots.Assembler.Emulator.Registers
             register.Value = processor.StackPointer.Pop();
         }
 
-        public uint Address { get { return (uint)(object)register.Value; } }
+        public uint Address { get { return register.Value.ToUInt32(null); } }
     }
 }

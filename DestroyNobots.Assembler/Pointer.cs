@@ -7,16 +7,16 @@ namespace DestroyNobots.Assembler
 {
     public struct Pointer
     {
-        uint value;
+        public uint Value { get; private set; }
 
         public Pointer(uint value)
         {
-            this.value = value;
+            this.Value = value;
         }
 
         public static implicit operator uint(Pointer p)
         {
-            return p.value;
+            return p.Value;
         }
 
         public static implicit operator Pointer(uint p)

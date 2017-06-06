@@ -53,7 +53,9 @@
     <Compile Include="DestroyNobotsGame.cs" />
     <Compile Include="Engine\Entities\EntityManager.cs" />
     <Compile Include="Engine\Entities\Vehicles\Vehicle.cs" />
+    <Compile Include="Engine\Input\ActionKey.cs" />
     <Compile Include="Engine\Input\InputManager.cs" />
+    <Compile Include="Engine\TextureManager.cs" />
     <Compile Include="IRenderable.cs" />
     <Compile Include="IUpdateable.cs" />
     <Compile Include="Program.cs" />
@@ -61,8 +63,10 @@
     <Compile Include="Engine\Entities\Robot.cs" />
     <Compile Include="Screens\GameScreen.cs" />
     <Compile Include="Screens\Screen.cs" />
+    <Compile Include="Timer.cs" />
+    <Compile Include="TimerEventArgs.cs" />
+    <Compile Include="TimerManager.cs" />
     <Compile Include="UI\AssemblerEditor.cs" />
-    <Compile Include="VertexPositionNormalColor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">
@@ -130,6 +134,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="BuggyCode.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content\buggy.png" />
     <Content Include="Content\heightmap.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

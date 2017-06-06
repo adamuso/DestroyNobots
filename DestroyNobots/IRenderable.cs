@@ -5,6 +5,6 @@ namespace DestroyNobots
     interface IRenderable
     {
         DestroyNobotsGame Game { get; set; }
-        void Render(GameTime gt);
+        void Draw(GameTime gt);
     }
 }
