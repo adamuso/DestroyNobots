@@ -54,7 +54,6 @@
     <Compile Include="Engine\Entities\EntityManager.cs" />
     <Compile Include="Engine\Entities\Vehicles\Vehicle.cs" />
     <Compile Include="Engine\Input\InputManager.cs" />
-    <Compile Include="Engine\Terrain.cs" />
     <Compile Include="IRenderable.cs" />
     <Compile Include="IUpdateable.cs" />
     <Compile Include="Program.cs" />
