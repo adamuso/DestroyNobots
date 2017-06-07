@@ -1,4 +1,5 @@
 ﻿using DestroyNobots.Assembler;
+using DestroyNobots.Assembler.Emulator;
 using System.Collections.Generic;
 
 namespace DestroyNobots.Computers
@@ -463,6 +464,27 @@ namespace DestroyNobots.Computers
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     processor.Registers[parameters[0]].Value = processor.Computer.Memory.Read<int>(parameters[1]);
+                }
+            )},
+            #endregion
+
+            #region I/O Operations
+            { 0x32, new AssemblerInstruction((instruction, context, parameters) =>
+                {
+                    var computer = context.GetContext<Computer>();
+
+                    if(computer.Ports.ContainsKey((ushort)parameters[0]))
+                    {
+                        computer.Ports[(ushort)parameters[0]].Out();
+                    }
+                }
+            )},
+
+            { 0x33, new AssemblerInstruction((instruction, context, parameters) =>
+                {
+                    var computer = context.GetContext<Computer>();
+
+
                 }
             )},
             #endregion

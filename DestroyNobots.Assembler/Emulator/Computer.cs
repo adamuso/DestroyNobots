@@ -16,6 +16,7 @@ namespace DestroyNobots.Assembler.Emulator
 
         public IMemory Memory { get { return physicalMemory; } }
         public IProcessorBase Processor { get; private set; }
+        public Dictionary<ushort, PeripheralPortHandler> Ports { get; private set; }
 
         public Computer(IProcessorBase processor, IMemory memory, IMemory rom = null)
         {
