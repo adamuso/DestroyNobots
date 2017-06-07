@@ -1,5 +1,8 @@
-﻿mov r3, 0
+﻿mov r2, 20
+mov r3, 0
+div r2, r3
 
 start:
 	inc r3
+	out 0x0, r3
 	jmp start

@@ -20,9 +20,10 @@ namespace DestroyNobots.Assembler.Emulator
         private ProgramMemoryReader<T> programMemoryReader;
 
         public Dictionary<byte, AssemblerInstruction> InstructionSet { get; private set; } // opcodes as keys
-        public Registers.Register<T>[] Registers { get; private set; }
-        //internal InterruptAction InterruptAction { get; private set; }
 
+        public Pointer? InterruptDataTablePointer { get; set; }
+
+        public Register<T>[] Registers { get; private set; }
         public ProgramCounter<T> ProgramCounter { get; private set; }
         public StackPointer<T> StackPointer { get; private set; }
 
@@ -33,20 +34,14 @@ namespace DestroyNobots.Assembler.Emulator
         public Processor(Dictionary<byte, AssemblerInstruction> instructions)
         {
             this.Computer = null;
-            Registers = new Registers.Register<T>[RegistersCount];
-            InstructionSet = instructions; // new Dictionary<byte, AssemblerInstruction>();
+            Registers = new Register<T>[RegistersCount];
+            InstructionSet = instructions; 
 
-            foreach(var entry in instructions)
-            {
-                
-            }
-
-            //InterruptAction = null;
             flags = 0;
             abort = false;
 
             for (int r = 0; r < RegistersCount; r++)
-                Registers[r] = new Registers.Register<T>();
+                Registers[r] = new Register<T>();
 
             StackPointer = new StackPointer<T>(this, Registers[StackPointerRegisterNumber], 0, 0);
             ProgramCounter = new ProgramCounter<T>(this, Registers[ProgramCountRegisterNumber]);
@@ -82,6 +77,21 @@ namespace DestroyNobots.Assembler.Emulator
         public void Reset()
         {
             abort = false;
+        }
+
+        public void Interrupt(byte interrupt)
+        {
+            if (InterruptDataTablePointer == null)
+            {
+#if DEBUG
+                Console.WriteLine("Aborted, int: " + interrupt.ToString("X"));
+#endif
+                Abort();
+            }
+            else
+            {
+                ProgramCounter.Jump((uint)(InterruptDataTablePointer.Value.Value + interrupt * 4));
+            }
         }
 
         protected int DecodeAddress(int undecode)

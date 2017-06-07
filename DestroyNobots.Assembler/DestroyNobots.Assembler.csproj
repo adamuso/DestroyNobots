@@ -49,6 +49,7 @@
     <Compile Include="BinaryMultiplier.cs" />
     <Compile Include="Emulator\Computer.cs" />
     <Compile Include="Emulator\IProcessorBase.cs" />
+    <Compile Include="Emulator\Peripherals\PeripheralPortHandler.cs" />
     <Compile Include="Emulator\RAMMemory.cs" />
     <Compile Include="Emulator\Registers\Register.cs" />
     <Compile Include="Emulator\Registers\StackPointer.cs" />

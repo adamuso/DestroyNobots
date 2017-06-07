@@ -17,7 +17,7 @@ namespace DestroyNobots.Computers
                     int reg2 = processor.Registers[parameters[1]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 + reg2;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -28,7 +28,7 @@ namespace DestroyNobots.Computers
                     int reg1 = processor.Registers[parameters[0]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 + parameters[1];
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -48,7 +48,7 @@ namespace DestroyNobots.Computers
                     int reg2 = processor.Registers[parameters[1]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 - reg2;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -57,7 +57,7 @@ namespace DestroyNobots.Computers
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
 
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                     processor.Registers[parameters[0]].Value = reg1 - parameters[1];
                 }
             )},
@@ -75,8 +75,8 @@ namespace DestroyNobots.Computers
                     int reg1 = processor.Registers[parameters[0]].Value;
                     int reg2 = processor.Registers[parameters[1]].Value;
 
-                    processor.Registers[parameters[0]].Value = reg1* reg2;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.Registers[parameters[0]].Value = reg1 * reg2;
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -85,8 +85,8 @@ namespace DestroyNobots.Computers
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
 
-                    processor.Registers[parameters[0]].Value = reg1* parameters[1];
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.Registers[parameters[0]].Value = reg1 * parameters[1];
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -96,8 +96,14 @@ namespace DestroyNobots.Computers
                     int reg1 = processor.Registers[parameters[0]].Value;
                     int reg2 = processor.Registers[parameters[1]].Value;
 
+                    if(reg2 == 0)
+                    {
+                        processor.Interrupt(0);
+                        return;
+                    }
+
                     processor.Registers[parameters[0]].Value = reg1 / reg2;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -107,7 +113,7 @@ namespace DestroyNobots.Computers
                     int reg1 = processor.Registers[parameters[0]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 / parameters[1];
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -117,7 +123,7 @@ namespace DestroyNobots.Computers
                     int reg1 = processor.Registers[parameters[0]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 % parameters[1];
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -127,7 +133,7 @@ namespace DestroyNobots.Computers
                     int reg1 = processor.Registers[parameters[0]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 % processor.Registers[parameters[1]].Value;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -135,7 +141,7 @@ namespace DestroyNobots.Computers
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     processor.Registers[parameters[0]].Value++;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -143,7 +149,7 @@ namespace DestroyNobots.Computers
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     processor.Registers[parameters[0]].Value--;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
             #endregion
@@ -157,7 +163,7 @@ namespace DestroyNobots.Computers
                     int reg2 = processor.Registers[parameters[1]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 | reg2;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -167,7 +173,7 @@ namespace DestroyNobots.Computers
                     int reg1 = processor.Registers[parameters[0]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 | parameters[1];
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -178,7 +184,7 @@ namespace DestroyNobots.Computers
                     int reg2 = processor.Registers[parameters[1]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 & reg2;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -188,7 +194,7 @@ namespace DestroyNobots.Computers
                     int reg1 = processor.Registers[parameters[0]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 & parameters[1];
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -200,7 +206,7 @@ namespace DestroyNobots.Computers
                     int reg2 = processor.Registers[parameters[1]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 ^ reg2;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -210,7 +216,7 @@ namespace DestroyNobots.Computers
                     int reg1 = processor.Registers[parameters[0]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 ^ parameters[1];
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -230,7 +236,7 @@ namespace DestroyNobots.Computers
                     int reg2 = processor.Registers[parameters[1]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 >> reg2;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -241,7 +247,7 @@ namespace DestroyNobots.Computers
                     int reg2 = processor.Registers[parameters[1]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 << reg2;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -251,7 +257,7 @@ namespace DestroyNobots.Computers
                     int reg1 = processor.Registers[parameters[0]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 >> parameters[1];
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
@@ -261,7 +267,7 @@ namespace DestroyNobots.Computers
                     int reg1 = processor.Registers[parameters[0]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 << parameters[1];
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
             #endregion
@@ -302,16 +308,16 @@ namespace DestroyNobots.Computers
             { 0x1B, new AssemblerInstruction((instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    processor.SetFlag(FlagType.EQUAL, processor.Registers[parameters[0]].Value == parameters[1]);
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
-                    processor.SetFlag(FlagType.GREATER, processor.Registers[parameters[0]].Value > parameters[1]);
+                    processor.SetFlag(FlagType.Equal, processor.Registers[parameters[0]].Value == parameters[1]);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Greater, processor.Registers[parameters[0]].Value > parameters[1]);
                 }
             )},
 
             { 0x1C, new AssemblerInstruction((instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if(processor.GetFlag(FlagType.EQUAL))
+                    if(processor.GetFlag(FlagType.Equal))
                         processor.Registers[31].Value += parameters[0];
                 }
             )},
@@ -319,7 +325,7 @@ namespace DestroyNobots.Computers
             { 0x1D, new AssemblerInstruction((instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (processor.GetFlag(FlagType.ZERO))
+                    if (processor.GetFlag(FlagType.Zero))
                         processor.Registers[31].Value += parameters[0];
                 }
             )},
@@ -327,7 +333,7 @@ namespace DestroyNobots.Computers
             { 0x1E, new AssemblerInstruction((instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (!processor.GetFlag(FlagType.EQUAL))
+                    if (!processor.GetFlag(FlagType.Equal))
                         processor.Registers[31].Value += parameters[0];
                 }
             )},
@@ -335,7 +341,7 @@ namespace DestroyNobots.Computers
             { 0x1F, new AssemblerInstruction((instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (!processor.GetFlag(FlagType.ZERO))
+                    if (!processor.GetFlag(FlagType.Zero))
                         processor.Registers[31].Value += parameters[0];
                 }
             )},
@@ -343,7 +349,7 @@ namespace DestroyNobots.Computers
             { 0x20, new AssemblerInstruction((instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (processor.GetFlag(FlagType.GREATER))
+                    if (processor.GetFlag(FlagType.Greater))
                         processor.Registers[31].Value += parameters[0];
                 }
             )},
@@ -351,7 +357,7 @@ namespace DestroyNobots.Computers
             { 0x21, new AssemblerInstruction((instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (!processor.GetFlag(FlagType.GREATER) && !processor.GetFlag(FlagType.EQUAL))
+                    if (!processor.GetFlag(FlagType.Greater) && !processor.GetFlag(FlagType.Equal))
                         processor.Registers[31].Value += parameters[0];
                 }
             )},
@@ -359,7 +365,7 @@ namespace DestroyNobots.Computers
             { 0x22, new AssemblerInstruction((instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (processor.GetFlag(FlagType.GREATER) || processor.GetFlag(FlagType.EQUAL))
+                    if (processor.GetFlag(FlagType.Greater) || processor.GetFlag(FlagType.Equal))
                         processor.Registers[31].Value += parameters[0];
                 }
             )},
@@ -367,13 +373,20 @@ namespace DestroyNobots.Computers
             { 0x23, new AssemblerInstruction((instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (!processor.GetFlag(FlagType.GREATER))
+                    if (!processor.GetFlag(FlagType.Greater))
                         processor.Registers[31].Value += parameters[0];
                 }
             )},
             #endregion
 
             #region Additional operations
+
+            { 0xD, new AssemblerInstruction((instruction, context, parameters) =>
+                {
+                    var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
+                    processor.InterruptDataTablePointer = processor.Registers[parameters[0]].Value;
+                }
+            )},
 
             { 0x24, new AssemblerInstruction((instruction, context, parameters) =>
                 {
@@ -475,7 +488,7 @@ namespace DestroyNobots.Computers
 
                     if(computer.Ports.ContainsKey((ushort)parameters[0]))
                     {
-                        computer.Ports[(ushort)parameters[0]].Out();
+                        computer.Ports[(ushort)parameters[0]].Out(parameters[1], 4);
                     }
                 }
             )},
@@ -483,8 +496,27 @@ namespace DestroyNobots.Computers
             { 0x33, new AssemblerInstruction((instruction, context, parameters) =>
                 {
                     var computer = context.GetContext<Computer>();
+                    var processor = computer.GetSpecificProcessor<VCM86Processor>();
+                    var register = processor.Registers[parameters[1]];
+
+                    if(computer.Ports.ContainsKey((ushort)parameters[0]))
+                    {
+                        computer.Ports[(ushort)parameters[0]].Out(register.Value, register.Size);
+                    }
+                }
+            )},
 
 
+            { 0x34, new AssemblerInstruction((instruction, context, parameters) =>
+                {
+                    var computer = context.GetContext<Computer>();
+                    var processor = computer.GetSpecificProcessor<VCM86Processor>();
+                    var register = processor.Registers[parameters[1]];
+
+                    if(computer.Ports.ContainsKey((ushort)parameters[0]))
+                    {
+                        register.Value = (int)computer.Ports[(ushort)parameters[0]].In(register.Size);
+                    }
                 }
             )},
             #endregion

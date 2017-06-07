@@ -1,7 +1,8 @@
 ﻿namespace DestroyNobots.Assembler.Emulator.Peripherals
 {
-    public class Peripheral
+    public interface IPeripheral
     {
-
+        void Install();
+        void Uninstall();
     }
 }

@@ -80,18 +80,24 @@ namespace DestroyNobots.Computers
             #endregion
 
             #region Additional operations
+            compiler.SetInstruction("lidt", 0xD, 1, AssemblerParameters.REGISTER);
             compiler.SetInstruction("call", 0x24, 1,  AssemblerParameters.POINTER);
             compiler.SetInstruction("ret", 0x25, 1,  AssemblerParameters.VALUE);
             compiler.SetInstruction("int", 0x31, 1,  AssemblerParameters.REGISTER);
             #endregion
 
             #region Memory operations
-
             compiler.SetInstruction("mov", 0x2C, 3,  AssemblerParameters.REGISTER, AssemblerParameters.POINTER, AssemblerParameters.VALUE);
             compiler.SetInstruction("mov", 0x2D, 3,  AssemblerParameters.POINTER, AssemblerParameters.REGISTER, AssemblerParameters.VALUE);
             compiler.SetInstruction("mov", 0x2E, 3,  AssemblerParameters.POINTER, AssemblerParameters.VALUE, AssemblerParameters.VALUE);
             compiler.SetInstruction("mov", 0x2F, 2,  AssemblerParameters.POINTER, AssemblerParameters.REGISTER);
             compiler.SetInstruction("mov", 0x30, 2,  AssemblerParameters.REGISTER, AssemblerParameters.POINTER);
+            #endregion
+
+            #region I/O Operations
+            compiler.SetInstruction("out", 0x32, 2, AssemblerParameters.VALUE, AssemblerParameters.VALUE);
+            compiler.SetInstruction("out", 0x33, 2, AssemblerParameters.VALUE, AssemblerParameters.REGISTER);
+            compiler.SetInstruction("in", 0x34, 2, AssemblerParameters.VALUE, AssemblerParameters.REGISTER);
             #endregion
 
             for (int i = 0; i < RegistersCount - 2; i++)
