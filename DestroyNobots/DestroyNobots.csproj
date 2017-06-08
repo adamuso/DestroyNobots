@@ -46,7 +46,12 @@
     <Compile Include="Computers\BasicComputer.cs" />
     <Compile Include="Computers\InstructionSets.cs" />
     <Compile Include="Engine\Camera.cs" />
+    <Compile Include="Engine\DetailedTile.cs" />
     <Compile Include="Engine\Entities\Buildings\Radar.cs" />
+    <Compile Include="Engine\Entities\EntityRenderer.cs" />
+    <Compile Include="Engine\RendererServiceContainer.cs" />
+    <Compile Include="Engine\IRenderer.cs" />
+    <Compile Include="Engine\IRendererHolder.cs" />
     <Compile Include="Engine\Entities\Vehicles\Buggy.cs" />
     <Compile Include="Engine\Entities\Buildings\Building.cs" />
     <Compile Include="Engine\Entities\Entity.cs" />
@@ -55,7 +60,10 @@
     <Compile Include="Engine\Entities\Vehicles\Vehicle.cs" />
     <Compile Include="Engine\Input\ActionKey.cs" />
     <Compile Include="Engine\Input\InputManager.cs" />
+    <Compile Include="Engine\Level.cs" />
     <Compile Include="Engine\TextureManager.cs" />
+    <Compile Include="Engine\Tile.cs" />
+    <Compile Include="Engine\TileSet.cs" />
     <Compile Include="IRenderable.cs" />
     <Compile Include="IUpdateable.cs" />
     <Compile Include="Program.cs" />
@@ -67,6 +75,9 @@
     <Compile Include="TimerEventArgs.cs" />
     <Compile Include="TimerManager.cs" />
     <Compile Include="UI\AssemblerEditor.cs" />
+    <Compile Include="UI\EntitySelectionManager.cs" />
+    <Compile Include="UI\GUI.cs" />
+    <Compile Include="UI\EntitySelectionRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">
@@ -139,6 +150,7 @@
     </Content>
     <Content Include="Content\buggy.png" />
     <Content Include="Content\heightmap.png" />
+    <Content Include="Content\ts.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />

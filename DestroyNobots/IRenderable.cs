@@ -2,7 +2,7 @@
 
 namespace DestroyNobots
 {
-    interface IRenderable
+    public interface IRenderable
     {
         DestroyNobotsGame Game { get; set; }
         void Draw(GameTime gt);
