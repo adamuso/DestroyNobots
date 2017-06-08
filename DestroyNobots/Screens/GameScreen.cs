@@ -1,10 +1,18 @@
-﻿using Microsoft.Xna.Framework;
+﻿using DestroyNobots.UI;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace DestroyNobots.Screens
 {
     public class GameScreen : Screen
     {
+        GUI gui;
+
+        public GameScreen()
+        {
+            gui = new GUI() { Game = Game };
+        }
+
         public override void Draw(GameTime gt)
         {
             base.Draw(gt);
@@ -13,13 +21,19 @@ namespace DestroyNobots.Screens
             Game.Level.Draw(gt);
             Game.EntityManager.Draw(gt);
             Game.SpriteBatch.End();
+
+            Game.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default);
+            gui.Draw(gt);
+            Game.SpriteBatch.End();
         }
 
         public override void Update(GameTime gt)
         {
             base.Update(gt);
 
+            Game.Camera.Update(gt);
             Game.EntityManager.Update(gt);
+            gui.Update(gt);
         }
     }
 }

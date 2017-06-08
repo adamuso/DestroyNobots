@@ -48,6 +48,10 @@
     <Compile Include="Engine\Camera.cs" />
     <Compile Include="Engine\DetailedTile.cs" />
     <Compile Include="Engine\Entities\Buildings\Radar.cs" />
+    <Compile Include="Engine\Entities\EntityRenderer.cs" />
+    <Compile Include="Engine\RendererServiceContainer.cs" />
+    <Compile Include="Engine\IRenderer.cs" />
+    <Compile Include="Engine\IRendererHolder.cs" />
     <Compile Include="Engine\Entities\Vehicles\Buggy.cs" />
     <Compile Include="Engine\Entities\Buildings\Building.cs" />
     <Compile Include="Engine\Entities\Entity.cs" />
@@ -71,6 +75,9 @@
     <Compile Include="TimerEventArgs.cs" />
     <Compile Include="TimerManager.cs" />
     <Compile Include="UI\AssemblerEditor.cs" />
+    <Compile Include="UI\EntitySelectionManager.cs" />
+    <Compile Include="UI\GUI.cs" />
+    <Compile Include="UI\EntitySelectionRenderer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">

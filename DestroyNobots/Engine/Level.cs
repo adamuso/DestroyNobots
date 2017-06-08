@@ -5,7 +5,7 @@ namespace DestroyNobots.Engine
 {
     public class Level : IRenderable
     {
-        private const int TileSize = 128;
+        private const int TileSize = 256;
 
         Tile[] tiles;
         int width;

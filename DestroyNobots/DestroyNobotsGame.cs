@@ -1,6 +1,7 @@
 ﻿using DestroyNobots.Engine;
 using DestroyNobots.Engine.Entities;
 using DestroyNobots.Engine.Entities.Vehicles;
+using DestroyNobots.Engine.Input;
 using DestroyNobots.Screens;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -22,6 +23,7 @@ namespace DestroyNobots
         public TextureManager TextureManager { get; private set; }
         public Camera Camera { get; private set; }
         public Level Level { get; private set; }
+        public InputManager InputManager { get; private set; }
 
         public DestroyNobotsGame()
         {
@@ -63,9 +65,10 @@ namespace DestroyNobots
             IsFixedTimeStep = false;
             IsMouseVisible = true;
 
+            InputManager = new InputManager();
             TimerManager = new TimerManager();
             EntityManager = new EntityManager() { Game = this };
-            Camera = new Camera();
+            Camera = new Camera() { Game = this, SceneSize = new Point(1280, 720) };
             Level = new Level(20, 20) { Game = this, TileSet = new TileSet(Content.Load<Texture2D>("ts"), 1024) };
             Level[0, 0] = new Tile() { Type = 1 };
             Level[1, 1] = new Tile() { Type = 2 };

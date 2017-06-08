@@ -13,7 +13,7 @@ namespace DestroyNobots.Engine.Entities
         {
             entities = new LinkedList<Entity>();
         }
-    
+
         public T Create<T>() where T : Entity, new()
         {
             T entity = new T() { Game = Game };
@@ -22,13 +22,26 @@ namespace DestroyNobots.Engine.Entities
             return entity;
         }
 
+        public Entity GetEntityAtPosition(Vector2 position)
+        {
+            foreach(Entity entity in entities)
+            {
+                if(entity.BoundingRectangle.Contains(position))
+                {
+                    return entity;
+                }
+            }
+
+            return null;
+        }
+
         public void Draw(GameTime gt)
         {
             var entityContainer = entities.First;
 
             while(entityContainer != null)
             {
-                entityContainer.Value.Draw(gt);
+                entityContainer.Value.RendererServices.Draw(entityContainer.Value, gt);
 
                 entityContainer = entityContainer.Next;
             }
