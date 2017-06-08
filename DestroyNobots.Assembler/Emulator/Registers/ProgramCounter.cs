@@ -8,6 +8,8 @@ namespace DestroyNobots.Assembler.Emulator.Registers
         private Processor<T> processor;
         private Register<T> register;
 
+        public uint Address { get { return register.Value.ToUInt32(null); } }
+
         public ProgramCounter(Processor<T> processor, Register<T> register)
         {
             this.processor = processor;
@@ -31,20 +33,26 @@ namespace DestroyNobots.Assembler.Emulator.Registers
 
         public void Jump(Pointer address)
         {
-            register.Value = (T)Convert.ChangeType(address, typeof(T));
+            register.Value = (T)Convert.ChangeType(address.Value, typeof(T));
         }
 
         public void Call(Pointer address)
         {
             processor.StackPointer.Push(register.Value);
-            register.Value = (T)Convert.ChangeType(address, typeof(T));
+            register.Value = (T)Convert.ChangeType(address.Value, typeof(T));
+        }
+
+        public void CallInterrupt(byte interrupt)
+        {
+            if (processor.InterruptDescriptorTablePointer != null)
+            {
+                Call(processor.Computer.Memory.Read<int>((uint)(processor.InterruptDescriptorTablePointer.Value.Value + interrupt * 4)));
+            }
         }
 
         public void Return()
         {
             register.Value = processor.StackPointer.Pop();
         }
-
-        public uint Address { get { return register.Value.ToUInt32(null); } }
     }
 }

@@ -18,13 +18,22 @@ namespace DestroyNobots.Assembler.Emulator.Registers
             this.stackSize = stackSize;
         }
 
+        public void Set(uint stackMemoryStart, uint stackSize)
+        {
+            this.stackMemoryStart = stackMemoryStart;
+            this.stackSize = stackSize;
+        }
+
         public void Push(T value)
         {
             processor.Computer.Memory.Write(register.Value.ToUInt32(null), value);
             register.Increment();
 
             if (register.Value.ToUInt32(null) > stackMemoryStart + stackSize * 4)
+            {
+                processor.Interrupt(2);
                 throw new Exception("Stack overflow!");
+            }
         }
 
         public T Pop()
@@ -32,7 +41,10 @@ namespace DestroyNobots.Assembler.Emulator.Registers
             register.Decrement();
 
             if (register.Value.ToUInt32(null) < stackMemoryStart)
+            {
+                processor.Interrupt(3);
                 throw new Exception("Stack underflow!");
+            }
 
             return processor.Computer.Memory.Read<T>(register.Value.ToUInt32(null));
         }

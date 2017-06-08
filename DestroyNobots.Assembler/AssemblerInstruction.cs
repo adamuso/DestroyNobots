@@ -10,21 +10,20 @@ namespace DestroyNobots.Assembler
     public class AssemblerInstruction
     {
         InstructionAction action;
-        Parser.AssemblerParameters[] parameters;
-        bool pointerOffset;
+        AssemblerParameters[] parameters;
 
         public int ParametersCount { get { return parameters?.Length ?? 0; } }
-        public Parser.AssemblerParameters[] Parameters { get { return parameters; } }
-        public bool PointerOffset { get { return pointerOffset; } }
+        public AssemblerParameters[] Parameters { get { return parameters; } }
+        public bool ConvertLabelsToOffsets { get; private set; }
 
-        public AssemblerInstruction(InstructionAction action, bool pointerOffset = true)
+        public AssemblerInstruction(InstructionAction action, bool convertLabelsToOffset = false)
         {
             this.action = action;
-            this.pointerOffset = pointerOffset;
+            ConvertLabelsToOffsets = convertLabelsToOffset;
             parameters = null;
         }
 
-        public AssemblerInstruction SetParameters(params Parser.AssemblerParameters[] parameters)
+        public AssemblerInstruction SetParameters(params AssemblerParameters[] parameters)
         {
             this.parameters = parameters;
             return this;

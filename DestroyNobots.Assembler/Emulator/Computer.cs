@@ -11,18 +11,22 @@ namespace DestroyNobots.Assembler.Emulator
     {
         private bool powerStatus;
         private IMemory rom;
-        private List<Peripheral> peripherals;
+        private LinkedList<IPeripheral> peripherals;
         private RAMMemory physicalMemory;
 
         public IMemory Memory { get { return physicalMemory; } }
         public IProcessorBase Processor { get; private set; }
+        public Dictionary<ushort, PeripheralPortHandler> Ports { get; private set; }
 
         public Computer(IProcessorBase processor, IMemory memory, IMemory rom = null)
         {
+            Ports = new Dictionary<ushort, PeripheralPortHandler>();
+            peripherals = new LinkedList<Peripherals.IPeripheral>();
+
             this.rom = rom;
             this.Processor = processor;
             this.Processor.Computer = this;
-            this.physicalMemory = new RAMMemory(memory);
+            this.physicalMemory = new RAMMemory(this, memory);
 
             powerStatus = false;
         }
@@ -30,6 +34,18 @@ namespace DestroyNobots.Assembler.Emulator
         public void SwitchROM(IMemory newRom)
         {
             rom = newRom;
+        }
+
+        public void ConnectPeripheral(IPeripheral peripheral)
+        {
+            peripheral.Install();
+            peripherals.AddLast(peripheral);
+        }
+
+        public void DisconnectPeripheral(IPeripheral peripheral)
+        {
+            peripheral.Uninstall();
+            peripherals.Remove(peripheral);
         }
 
         public T GetSpecificProcessor<T>()

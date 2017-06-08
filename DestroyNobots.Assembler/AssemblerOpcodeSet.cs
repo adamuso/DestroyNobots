@@ -19,7 +19,7 @@ namespace DestroyNobots.Assembler
             opcodes.Add(opcode);
         }
 
-        public byte Find(params Parser.AssemblerParameters[] parameters)
+        public byte Find(params AssemblerParameters[] parameters)
         {
             for (int i = 0; i < opcodes.Count; i++)
             {
@@ -33,7 +33,7 @@ namespace DestroyNobots.Assembler
                 for (int j = 0; j < parameters.Length; j++)
                 {
                     // if parameter does not have pointer flag
-                    if ((parameters[j] & Parser.AssemblerParameters.POINTER) == 0)
+                    if ((parameters[j] & AssemblerParameters.Pointer) == 0)
                     {
                         if (parameters[j] != ins.Parameters[j])
                         {
@@ -43,7 +43,10 @@ namespace DestroyNobots.Assembler
                     }
                     else
                     {
-                        if (Parser.AssemblerParameters.POINTER != ins.Parameters[j])
+                        if ((parameters[j] & AssemblerParameters.Value) != 0 && (ins.Parameters[j] & AssemblerParameters.Value) != 0)
+                            continue;
+
+                        if (AssemblerParameters.Pointer != ins.Parameters[j])
                         {
                             found = false;
                             break;

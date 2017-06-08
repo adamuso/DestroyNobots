@@ -1,5 +1,29 @@
-﻿mov r3, 0
+﻿mov r1, lidt_ptrs
+mov [r1], int0, dword
+add r1, 4
+mov [r1], int1, dword
+mov r1, lidt_ptrs
+lidt r1
+
+mov [10000], 10, byte
+mov r2, 20
+mov r3, 0
+div r2, r3
 
 start:
 	inc r3
+	out 0x0, r3
 	jmp start
+
+int0:
+	dec r3
+	out 0x0, r3
+	jmp int0
+
+int1:
+	sub r3, 6
+	out 0x0, r3
+	jmp int1
+
+lidt_ptrs:
+	reserve 256, dword

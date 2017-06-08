@@ -16,6 +16,7 @@ namespace DestroyNobots.Assembler.Emulator
 
         AssemblerCompiler GetAssociatedCompiler();
 
+        void Interrupt(byte interrupt);
         bool Running { get; }
         Computer Computer { get; set; }
     }
