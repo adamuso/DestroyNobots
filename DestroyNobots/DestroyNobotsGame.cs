@@ -25,6 +25,8 @@ namespace DestroyNobots
         public Level Level { get; private set; }
         public InputManager InputManager { get; private set; }
 
+        public SpriteFont EditorFont { get; private set; }
+
         public DestroyNobotsGame()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -50,7 +52,7 @@ namespace DestroyNobots
             }
         }
 
-        Buggy b;
+        public Buggy b;
 
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
@@ -103,6 +105,8 @@ namespace DestroyNobots
             SpriteBatch = new SpriteBatch(GraphicsDevice);
             TextureManager.Load();
 
+            EditorFont = Content.Load<SpriteFont>("EditorFont");
+
             SwitchScreen<GameScreen>();
         }
 
@@ -121,6 +125,7 @@ namespace DestroyNobots
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            InputManager.Update(gameTime);
             b.Computer.Step();
             TimerManager.Update(gameTime);
             currentScreen.Update(gameTime);
