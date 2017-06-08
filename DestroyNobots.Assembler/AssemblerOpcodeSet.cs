@@ -33,7 +33,7 @@ namespace DestroyNobots.Assembler
                 for (int j = 0; j < parameters.Length; j++)
                 {
                     // if parameter does not have pointer flag
-                    if ((parameters[j] & AssemblerParameters.POINTER) == 0)
+                    if ((parameters[j] & AssemblerParameters.Pointer) == 0)
                     {
                         if (parameters[j] != ins.Parameters[j])
                         {
@@ -43,7 +43,10 @@ namespace DestroyNobots.Assembler
                     }
                     else
                     {
-                        if (AssemblerParameters.POINTER != ins.Parameters[j])
+                        if ((parameters[j] & AssemblerParameters.Value) != 0 && (ins.Parameters[j] & AssemblerParameters.Value) != 0)
+                            continue;
+
+                        if (AssemblerParameters.Pointer != ins.Parameters[j])
                         {
                             found = false;
                             break;

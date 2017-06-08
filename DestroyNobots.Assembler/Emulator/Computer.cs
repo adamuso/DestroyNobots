@@ -26,7 +26,7 @@ namespace DestroyNobots.Assembler.Emulator
             this.rom = rom;
             this.Processor = processor;
             this.Processor.Computer = this;
-            this.physicalMemory = new RAMMemory(memory);
+            this.physicalMemory = new RAMMemory(this, memory);
 
             powerStatus = false;
         }

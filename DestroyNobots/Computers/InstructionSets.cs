@@ -284,7 +284,7 @@ namespace DestroyNobots.Computers
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     processor.ProgramCounter.Branch(parameters[0]);
-                }
+                }, true
             )},
             #endregion
 
@@ -319,7 +319,7 @@ namespace DestroyNobots.Computers
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     if(processor.GetFlag(FlagType.Equal))
                         processor.Registers[31].Value += parameters[0];
-                }
+                }, true
             )},
 
             { 0x1D, new AssemblerInstruction((instruction, context, parameters) =>
@@ -327,7 +327,7 @@ namespace DestroyNobots.Computers
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     if (processor.GetFlag(FlagType.Zero))
                         processor.Registers[31].Value += parameters[0];
-                }
+                }, true
             )},
 
             { 0x1E, new AssemblerInstruction((instruction, context, parameters) =>
@@ -335,7 +335,7 @@ namespace DestroyNobots.Computers
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     if (!processor.GetFlag(FlagType.Equal))
                         processor.Registers[31].Value += parameters[0];
-                }
+                }, true
             )},
 
             { 0x1F, new AssemblerInstruction((instruction, context, parameters) =>
@@ -343,7 +343,7 @@ namespace DestroyNobots.Computers
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     if (!processor.GetFlag(FlagType.Zero))
                         processor.Registers[31].Value += parameters[0];
-                }
+                }, true
             )},
 
             { 0x20, new AssemblerInstruction((instruction, context, parameters) =>
@@ -351,7 +351,7 @@ namespace DestroyNobots.Computers
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     if (processor.GetFlag(FlagType.Greater))
                         processor.Registers[31].Value += parameters[0];
-                }
+                }, true
             )},
 
             { 0x21, new AssemblerInstruction((instruction, context, parameters) =>
@@ -359,7 +359,7 @@ namespace DestroyNobots.Computers
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     if (!processor.GetFlag(FlagType.Greater) && !processor.GetFlag(FlagType.Equal))
                         processor.Registers[31].Value += parameters[0];
-                }
+                }, true
             )},
 
             { 0x22, new AssemblerInstruction((instruction, context, parameters) =>
@@ -367,7 +367,7 @@ namespace DestroyNobots.Computers
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     if (processor.GetFlag(FlagType.Greater) || processor.GetFlag(FlagType.Equal))
                         processor.Registers[31].Value += parameters[0];
-                }
+                }, true
             )},
 
             { 0x23, new AssemblerInstruction((instruction, context, parameters) =>
@@ -375,7 +375,7 @@ namespace DestroyNobots.Computers
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     if (!processor.GetFlag(FlagType.Greater))
                         processor.Registers[31].Value += parameters[0];
-                }
+                }, true
             )},
             #endregion
 
@@ -384,7 +384,7 @@ namespace DestroyNobots.Computers
             { 0xD, new AssemblerInstruction((instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    processor.InterruptDataTablePointer = processor.Registers[parameters[0]].Value;
+                    processor.InterruptDescriptorTablePointer = processor.Registers[parameters[0]].Value;
                 }
             )},
 

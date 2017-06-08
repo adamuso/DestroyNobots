@@ -21,7 +21,7 @@ namespace DestroyNobots.Assembler.Emulator
 
         public Dictionary<byte, AssemblerInstruction> InstructionSet { get; private set; } // opcodes as keys
 
-        public Pointer? InterruptDataTablePointer { get; set; }
+        public Pointer? InterruptDescriptorTablePointer { get; set; }
 
         public Register<T>[] Registers { get; private set; }
         public ProgramCounter<T> ProgramCounter { get; private set; }
@@ -81,7 +81,7 @@ namespace DestroyNobots.Assembler.Emulator
 
         public void Interrupt(byte interrupt)
         {
-            if (InterruptDataTablePointer == null)
+            if (InterruptDescriptorTablePointer == null)
             {
 #if DEBUG
                 Console.WriteLine("Aborted, int: " + interrupt.ToString("X"));
@@ -89,9 +89,9 @@ namespace DestroyNobots.Assembler.Emulator
                 Abort();
             }
             else
-            {
-                ProgramCounter.Jump((uint)(InterruptDataTablePointer.Value.Value + interrupt * 4));
-            }
+                ProgramCounter.CallInterrupt(interrupt);
+                
+            throw new InterruptSignal(interrupt);
         }
 
         protected int DecodeAddress(int undecode)
@@ -153,7 +153,7 @@ namespace DestroyNobots.Assembler.Emulator
                 }
 
                 byte opcode = (byte)(instruction & 0xFF); //Memory.read<byte>((ushort)current.Value);
-                byte paramstypes = (byte)(instruction & 0xFF00); // Memory.read<byte>((ushort)current.Value + 1);
+                byte paramstypes = (byte)((instruction & 0xFF00) >> 8); // Memory.read<byte>((ushort)current.Value + 1);
                 uint mem = ProgramCounter.Address + 2;
 
                 AssemblerInstruction asm = InstructionSet[opcode];
@@ -163,17 +163,24 @@ namespace DestroyNobots.Assembler.Emulator
                 {
                     byte pt = (byte)((paramstypes & (0x03 << i * 2)) >> i * 2);
 
-                    if (asm.Parameters[i] == AssemblerParameters.REGISTER)
+                    if (asm.Parameters[i] == AssemblerParameters.Register)
                         param[i] = programMemoryReader.ReadRegister(ref mem, pt);
-                    else if (asm.Parameters[i] == AssemblerParameters.VALUE)
+                    else if ((asm.Parameters[i] & AssemblerParameters.Value) != 0)
                         param[i] = programMemoryReader.ReadValue(ref mem, pt);
-                    else if (asm.Parameters[i] == AssemblerParameters.POINTER)
+                    else if (asm.Parameters[i] == AssemblerParameters.Pointer)
                         param[i] = programMemoryReader.ReadPointer(ref mem, pt);
                 }
 
                 ProgramCounter.Set(mem);
 
-                asm.Eval(Computer, param);
+                try
+                {
+                    asm.Eval(Computer, param);
+                }
+                catch(InterruptSignal interrupt)
+                {
+
+                }
 
                 if (step)
                     break;

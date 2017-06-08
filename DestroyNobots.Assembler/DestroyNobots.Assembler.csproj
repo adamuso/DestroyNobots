@@ -48,6 +48,7 @@
     <Compile Include="AssemblerInstruction.cs" />
     <Compile Include="BinaryMultiplier.cs" />
     <Compile Include="Emulator\Computer.cs" />
+    <Compile Include="Emulator\InterruptSignal.cs" />
     <Compile Include="Emulator\IProcessorBase.cs" />
     <Compile Include="Emulator\Peripherals\PeripheralPortHandler.cs" />
     <Compile Include="Emulator\RAMMemory.cs" />

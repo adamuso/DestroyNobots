@@ -10,7 +10,7 @@ namespace DestroyNobots.Engine.Entities.Vehicles
     {
         public Buggy()
         {
-
+            Computer.ConnectPeripheral(this);
         }
 
         public override void Draw(GameTime gt)
