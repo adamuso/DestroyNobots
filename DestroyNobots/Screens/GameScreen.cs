@@ -10,7 +10,7 @@ namespace DestroyNobots.Screens
 
         public GameScreen()
         {
-            gui = new GUI() { Game = Game };
+            gui = new GUI() { Screen = this };
         }
 
         public override void Draw(GameTime gt)

@@ -44,7 +44,7 @@ namespace DestroyNobots.UI
         {
             if (GUI.Game.InputManager.MouseState.LeftButton == ButtonState.Pressed)
             {
-                Vector2 inGamePosition = Vector2.Transform(GUI.Game.InputManager.GetMousePosition(), GUI.Game.Camera.View);
+                Vector2 inGamePosition = Vector2.Transform(GUI.Game.InputManager.GetMousePosition(), Matrix.Invert(GUI.Game.Camera.View));
 
                 Entity entity = GUI.Game.EntityManager.GetEntityAtPosition(inGamePosition);
 

@@ -8,7 +8,7 @@ namespace DestroyNobots.Engine.Entities
         public bool Destroyed { get; private set; }
         public DestroyNobotsGame Game { get; set; }
         public RendererServiceContainer RendererServices { get; private set; }
-        public Rectangle BoundingRectangle { get; protected set; }
+        public virtual Rectangle BoundingRectangle { get { return Rectangle.Empty; } }
 
         public Entity()
         {
