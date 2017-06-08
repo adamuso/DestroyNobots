@@ -407,9 +407,9 @@ namespace DestroyNobots.Assembler
             return labels;
         }
 
-        public void Compile(string text)
+        public byte[] Compile(string text)
         {
-            Compile(new System.IO.MemoryStream(System.Text.ASCIIEncoding.ASCII.GetBytes(text)));
+            return Compile(new System.IO.MemoryStream(System.Text.ASCIIEncoding.ASCII.GetBytes(text)));
         }
 
         public byte[] Compile(System.IO.Stream stream)
