@@ -74,7 +74,95 @@ namespace DestroyNobots.UI
             return (Game.EditorFont.MeasureString(maxLine) * fontScale).X;
         }
 
+        private void SetLineNumberAndPosition(int line, int pos)
+        {
+            string[] lines = text.ToString().Split('\n');
+
+            if (line < 0 || line >= lines.Length)
+                return;
+
+            caretPosition = GetIndexFromLineNumberAndPosition(line, pos);
+        }
+
+        private int GetIndexFromLineNumberAndPosition(int line, int pos)
+        {
+            string[] lines = text.ToString().Split('\n');
+
+            if (line < 0 || line >= lines.Length)
+                return -1;
+
+            int caretPosition = 0;
+
+            if (line >= lines.Length - 1)
+                line = lines.Length - 1;
+
+            for (int i = 0; i < line; i++)
+            {
+                caretPosition += lines[i].Length + 1;
+            }
+
+            if (pos > lines[line].Length)
+                pos = lines[line].Length;
+
+            return caretPosition + pos;
+        }
+
+        private void GetLineNumberAndPositionFromIndex(int index, out int line, out int pos)
+        {
+            string[] lines = text.ToString().Split('\n');
+            int caret = index;
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (caret - (lines[i].Length + 1) < 0)
+                {
+                    line = i;
+                    pos = caret;
+                    return;
+                }
+                else if (caret - (lines[i].Length + 1) == 0)
+                {
+                    line = i + 1;
+                    pos = 0;
+                    return;
+                }
+                else
+                    caret -= lines[i].Length + 1;
+            }
+
+            line = -1;
+            pos = -1;
+        }
+
+        #region Keyboard input handling
         void IInputElement.OnKeyDown(KeyboardEventArgs e)
+        {
+            HandleTextIsertionKeys(e);
+            HandleTextMovement(e);
+            HandleTextDeletion(e);
+            HandleTab(e);
+            HandleTextOperations(e);
+
+            if (e.Control)
+            {
+                if(e.Key == Keys.B)
+                {
+                    byte[] code = Game.b.Computer.Processor.GetAssociatedCompiler().Compile(text.ToString());
+                    var memory = new Assembler.SafeMemory(code.Length, Assembler.BinaryMultiplier.B);
+                    memory.Write(0, code);
+                    Game.b.Computer.PowerDown();
+                    Game.b.Computer.SwitchROM(memory);
+                    Game.b.Computer.PowerUp();
+                }
+            }
+        }
+
+        void IInputElement.OnKeyUp(KeyboardEventArgs e)
+        {
+
+        }
+
+        private void HandleTextIsertionKeys(KeyboardEventArgs e)
         {
             if (!e.Control && (
                     e.KeyCode >= (int)Keys.D0 && e.KeyCode <= (int)Keys.D9 ||
@@ -153,7 +241,7 @@ namespace DestroyNobots.UI
 
                     text.Insert(caretPosition, "\n");
                     caretPosition++;
-                    
+
                     string[] lines = text.ToString().Split('\n');
 
                     for (int i = 0; i < lines[line].Length; i++)
@@ -276,56 +364,10 @@ namespace DestroyNobots.UI
                     caretPosition++;
                 }
             }
+        }
 
-            if (e.Key == Keys.NumPad4)
-                HorizontalScroll += 1;
-
-            if (e.Key == Keys.NumPad6)
-                HorizontalScroll -= 1;
-
-            if (!e.Control)
-            { 
-                if (e.Key == Keys.Back && (caretPosition > 0 || selectionAnchor != -1))
-                {
-                    if (selectionAnchor == -1)
-                    {
-                        text.Remove(caretPosition - 1, 1);
-                        caretPosition--;
-                    }
-                    else
-                    {
-                        text.Remove(SelectionStart, SelectionEnd - SelectionStart);
-                        caretPosition = SelectionStart;
-                        selectionAnchor = -1;
-                    }
-                }
-
-
-                if (e.Key == Keys.Left || e.Key == Keys.Right || e.Key == Keys.Up || e.Key == Keys.Down)
-                {
-                    if (!e.Shift)
-                        selectionAnchor = -1;
-                    else if (selectionAnchor == -1)
-                        selectionAnchor = caretPosition;
-
-                    if (e.Key == Keys.Left && caretPosition > 0)
-                        caretPosition--;
-
-                    if (e.Key == Keys.Right && caretPosition < text.Length)
-                        caretPosition++;
-
-                    if (e.Key == Keys.Up)
-                    {
-                        MoveUpLine();
-                    }
-
-                    if (e.Key == Keys.Down)
-                    {
-                        MoveDownLine();
-                    }
-                }
-            }
-
+        private void HandleTab(KeyboardEventArgs e)
+        {
             if (e.Key == Keys.Tab)
             {
                 if (selectionAnchor == -1)
@@ -355,7 +397,7 @@ namespace DestroyNobots.UI
                 }
                 else
                 {
-                    if(e.Shift)
+                    if (e.Shift)
                     {
                         int startLine, startPos, endLine, endPos;
                         GetLineNumberAndPositionFromIndex(SelectionStart, out startLine, out startPos);
@@ -415,89 +457,39 @@ namespace DestroyNobots.UI
                     }
                 }
             }
+        }
 
-            if(e.Key == Keys.Delete && caretPosition < text.Length)
+        private void HandleTextMovement(KeyboardEventArgs e)
+        {
+            if(!e.Control)
             {
-                if(selectionAnchor == -1)
+                if (e.Key == Keys.Left || e.Key == Keys.Right || e.Key == Keys.Up || e.Key == Keys.Down)
                 {
-                    text.Remove(caretPosition, 1);
-                }
-                else
-                {
-                    text.Remove(SelectionStart, SelectionEnd - SelectionStart);
-                    caretPosition = SelectionStart;
-                    selectionAnchor = -1;
+                    if (!e.Shift)
+                        selectionAnchor = -1;
+                    else if (selectionAnchor == -1)
+                        selectionAnchor = caretPosition;
+
+                    if (e.Key == Keys.Left && caretPosition > 0)
+                        caretPosition--;
+
+                    if (e.Key == Keys.Right && caretPosition < text.Length)
+                        caretPosition++;
+
+                    if (e.Key == Keys.Up)
+                    {
+                        MoveUpLine();
+                    }
+
+                    if (e.Key == Keys.Down)
+                    {
+                        MoveDownLine();
+                    }
                 }
             }
-
-            if (e.Control)
+            else
             {
-                if (e.Key == Keys.C && selectionAnchor != -1)
-                {
-                    clipboard = text.ToString(SelectionStart, SelectionEnd - SelectionStart);
-                }
-
-                if (e.Key == Keys.X && selectionAnchor != -1)
-                {
-                    clipboard = text.ToString(SelectionStart, SelectionEnd - SelectionStart);
-                    text.Remove(SelectionStart, SelectionEnd - SelectionStart);
-                    caretPosition = SelectionStart;
-                    selectionAnchor = -1;
-                }
-
-                if (e.Key == Keys.V && clipboard != null)
-                {
-                    if (selectionAnchor != -1)
-                    {
-                        text.Remove(SelectionStart, SelectionEnd - SelectionStart);
-                        caretPosition = SelectionStart;
-                        selectionAnchor = -1;
-                    }
-
-                    text.Insert(caretPosition, clipboard);
-                    caretPosition += clipboard.Length;
-                }
-
-                if(e.Key == Keys.B)
-                {
-                    byte[] code = Game.b.Computer.Processor.GetAssociatedCompiler().Compile(text.ToString());
-                    var memory = new Assembler.SafeMemory(code.Length, Assembler.BinaryMultiplier.B);
-                    memory.Write(0, code);
-                    Game.b.Computer.PowerDown();
-                    Game.b.Computer.SwitchROM(memory);
-                    Game.b.Computer.PowerUp();
-                }
-
-                if (e.Key == Keys.Back && (caretPosition > 0 || selectionAnchor != -1))
-                {
-                    if (selectionAnchor == -1)
-                    {
-                        int removed = 0;
-
-                        while (caretPosition > 0 && ((!char.IsWhiteSpace(text[caretPosition - 1]) && text[caretPosition - 1] != ',') || removed == 0))
-                        {
-                            text.Remove(caretPosition - 1, 1);
-                            caretPosition--;
-                            removed++;
-                        }
-
-                        if(caretPosition > 0)
-                        {
-                            text.Remove(caretPosition - 1, 1);
-                            caretPosition--;
-                            removed++;
-                        }
-                    }
-                    else
-                    {
-                        text.Remove(SelectionStart, SelectionEnd - SelectionStart);
-                        caretPosition = SelectionStart;
-                        selectionAnchor = -1;
-                    }
-                }
-
-
-                if (e.Key == Keys.Left || e.Key == Keys.Right || e.Key == Keys.Up || e.Key == Keys.Down)
+                if (e.Key == Keys.Left || e.Key == Keys.Right)
                 {
                     if (!e.Shift)
                         selectionAnchor = -1;
@@ -529,69 +521,98 @@ namespace DestroyNobots.UI
             }
         }
 
-        void IInputElement.OnKeyUp(KeyboardEventArgs e)
+        private void HandleTextDeletion(KeyboardEventArgs e)
         {
 
-        }
-
-        private void SetLineNumberAndPosition(int line, int pos)
-        {
-            string[] lines = text.ToString().Split('\n');
-
-            if (line < 0 || line >= lines.Length)
-                return;
-
-            caretPosition = GetIndexFromLineNumberAndPosition(line, pos);
-        }
-
-        private int GetIndexFromLineNumberAndPosition(int line, int pos)
-        {
-            string[] lines = text.ToString().Split('\n');
-
-            if (line < 0 || line >= lines.Length)
-                return -1;
-
-            int caretPosition = 0;
-
-            if (line >= lines.Length - 1)
-                line = lines.Length - 1;
-
-            for (int i = 0; i < line; i++)
+            if (e.Key == Keys.Back && (caretPosition > 0 || selectionAnchor != -1))
             {
-                caretPosition += lines[i].Length + 1;
-            }
-
-            if (pos > lines[line].Length)
-                pos = lines[line].Length;
-
-            return caretPosition + pos;
-        }
-
-        private void GetLineNumberAndPositionFromIndex(int index, out int line, out int pos)
-        {
-            string[] lines = text.ToString().Split('\n');
-            int caret = index;
-
-            for (int i = 0; i < lines.Length; i++)
-            {
-                if (caret - (lines[i].Length + 1) < 0)
+                if (selectionAnchor == -1)
                 {
-                    line = i;
-                    pos = caret;
-                    return;
-                }
-                else if (caret - (lines[i].Length + 1) == 0)
-                {
-                    line = i + 1;
-                    pos = 0;
-                    return;
+                    if (!e.Control)
+                    {
+                        text.Remove(caretPosition - 1, 1);
+                        caretPosition--;
+                    }
+                    else
+                    {
+                        int removed = 0;
+
+                        while (caretPosition > 0 && ((!char.IsWhiteSpace(text[caretPosition - 1]) && text[caretPosition - 1] != ',') || removed == 0))
+                        {
+                            text.Remove(caretPosition - 1, 1);
+                            caretPosition--;
+                            removed++;
+                        }
+
+                        if (caretPosition > 0)
+                        {
+                            text.Remove(caretPosition - 1, 1);
+                            caretPosition--;
+                            removed++;
+                        }
+                    }
                 }
                 else
-                    caret -= lines[i].Length + 1;
+                {
+                    text.Remove(SelectionStart, SelectionEnd - SelectionStart);
+                    caretPosition = SelectionStart;
+                    selectionAnchor = -1;
+                }
             }
 
-            line = -1;
-            pos = -1;
+            if (e.Key == Keys.Delete && caretPosition < text.Length)
+            {
+                if (selectionAnchor == -1)
+                {
+                    text.Remove(caretPosition, 1);
+                }
+                else
+                {
+                    if (e.Control)
+                    {
+
+                    }
+                    else
+                    {
+                        text.Remove(SelectionStart, SelectionEnd - SelectionStart);
+                        caretPosition = SelectionStart;
+                        selectionAnchor = -1;
+                    }
+                }
+            }
+
+        }
+
+        private void HandleTextOperations(KeyboardEventArgs e)
+        {
+            if (e.Control)
+            {
+                if (e.Key == Keys.C && selectionAnchor != -1)
+                {
+                    clipboard = text.ToString(SelectionStart, SelectionEnd - SelectionStart);
+                }
+
+                if (e.Key == Keys.X && selectionAnchor != -1)
+                {
+                    clipboard = text.ToString(SelectionStart, SelectionEnd - SelectionStart);
+                    text.Remove(SelectionStart, SelectionEnd - SelectionStart);
+                    caretPosition = SelectionStart;
+                    selectionAnchor = -1;
+                }
+
+                if (e.Key == Keys.V && clipboard != null)
+                {
+                    if (selectionAnchor != -1)
+                    {
+                        text.Remove(SelectionStart, SelectionEnd - SelectionStart);
+                        caretPosition = SelectionStart;
+                        selectionAnchor = -1;
+                    }
+
+                    text.Insert(caretPosition, clipboard);
+                    caretPosition += clipboard.Length;
+                }
+            }
         }
 
         private void MoveUpLine()
@@ -609,6 +630,7 @@ namespace DestroyNobots.UI
             line++;
             SetLineNumberAndPosition(line, pos);
         }
+        #endregion
 
         public void Draw(GameTime gt)
         {
