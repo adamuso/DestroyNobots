@@ -49,7 +49,11 @@
     <Compile Include="Engine\DetailedTile.cs" />
     <Compile Include="Engine\Entities\Buildings\Radar.cs" />
     <Compile Include="Engine\Entities\EntityRenderer.cs" />
+    <Compile Include="Engine\Input\IInputElementContainer.cs" />
+    <Compile Include="Engine\Input\InputElementManager.cs" />
     <Compile Include="Engine\Input\KeyboardEventArgs.cs" />
+    <Compile Include="Engine\Input\MouseButtons.cs" />
+    <Compile Include="Engine\Input\MouseEventArgs.cs" />
     <Compile Include="Engine\RendererServiceContainer.cs" />
     <Compile Include="Engine\IRenderer.cs" />
     <Compile Include="Engine\IRendererHolder.cs" />
@@ -76,6 +80,7 @@
     <Compile Include="TimerEventArgs.cs" />
     <Compile Include="TimerManager.cs" />
     <Compile Include="UI\AssemblerEditor.cs" />
+    <Compile Include="UI\AssemblerEditorScrollbar.cs" />
     <Compile Include="UI\EntitySelectionManager.cs" />
     <Compile Include="UI\GUI.cs" />
     <Compile Include="UI\EntitySelectionRenderer.cs" />

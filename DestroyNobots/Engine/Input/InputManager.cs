@@ -8,18 +8,20 @@ namespace DestroyNobots.Engine.Input
     public class InputManager : IUpdateable
     {
         private Dictionary<ActionKey, Keys> keyMapping;
-        private KeyboardState oldState;
+        private KeyboardState oldKeyboardState;
+        private MouseState oldMouseState;
         private Keys lastKey;
         private int lastKeyAccumulator;
         private int lastKeyRepeatAccumulator;
 
         public MouseState MouseState { get { return Mouse.GetState(); } }
         public bool UseEvents { get; set; }
-        public IInputElement FocusedElement { get; set; }
+        public InputElementManager InputElementManager { get; private set; }
 
         public InputManager()
         {
             keyMapping = new Dictionary<ActionKey, Keys>();
+            InputElementManager = new InputElementManager();
             UseEvents = false;
         }
 
@@ -50,7 +52,7 @@ namespace DestroyNobots.Engine.Input
         {
             if (UseEvents)
             {
-                KeyboardState newState = Keyboard.GetState();
+                KeyboardState newKeyboardState = Keyboard.GetState();
 
                 if (lastKeyAccumulator < 400)
                 {
@@ -63,24 +65,24 @@ namespace DestroyNobots.Engine.Input
 
                     while (lastKeyRepeatAccumulator > 30)
                     {
-                        FocusedElement.OnKeyDown(new KeyboardEventArgs(lastKey, newState));
+                        InputElementManager.OnKeyDown(new KeyboardEventArgs(lastKey, newKeyboardState));
                         lastKeyRepeatAccumulator -= 30;
                     }
                 }
 
                 for (int i = 0; i <= 255; i++)
                 {
-                    if (newState.IsKeyDown((Keys)i))
+                    if (newKeyboardState.IsKeyDown((Keys)i))
                     {
-                        if (!oldState.IsKeyDown((Keys)i))
+                        if (!oldKeyboardState.IsKeyDown((Keys)i))
                         {
                             lastKeyAccumulator = 0;
                             lastKeyRepeatAccumulator = 0;
                             lastKey = (Keys)i;
-                            FocusedElement.OnKeyDown(new KeyboardEventArgs((Keys)i, newState));
+                            InputElementManager.OnKeyDown(new KeyboardEventArgs((Keys)i, newKeyboardState));
                         }
                     }
-                    else if (oldState.IsKeyDown((Keys)i))
+                    else if (oldKeyboardState.IsKeyDown((Keys)i))
                     {
                         if ((Keys)i == lastKey)
                         {
@@ -89,11 +91,58 @@ namespace DestroyNobots.Engine.Input
                             lastKey = Keys.None;
                         }
 
-                        FocusedElement.OnKeyUp(new KeyboardEventArgs((Keys)i, newState));
+                        InputElementManager.OnKeyUp(new KeyboardEventArgs((Keys)i, newKeyboardState));
                     }
                 }
 
-                oldState = newState;
+                oldKeyboardState = newKeyboardState;
+
+                MouseState newMouseState = Mouse.GetState();
+
+                if (newMouseState.X != oldMouseState.X || newMouseState.Y != oldMouseState.Y)
+                    InputElementManager.OnMouseMove(new MouseEventArgs(MouseButtons.None, newMouseState));
+
+                if (newMouseState.LeftButton == ButtonState.Pressed)
+                {
+                    if (oldMouseState.LeftButton == ButtonState.Released)
+                        InputElementManager.OnMouseDown(new MouseEventArgs(MouseButtons.Left, newMouseState));
+                }
+                else if (oldMouseState.LeftButton == ButtonState.Pressed)
+                    InputElementManager.OnMouseUp(new MouseEventArgs(MouseButtons.Left, newMouseState));
+
+                if (newMouseState.RightButton == ButtonState.Pressed)
+                {
+                    if (oldMouseState.RightButton == ButtonState.Released)
+                        InputElementManager.OnMouseDown(new MouseEventArgs(MouseButtons.Right, newMouseState));
+                }
+                else if (oldMouseState.RightButton == ButtonState.Pressed)
+                    InputElementManager.OnMouseUp(new MouseEventArgs(MouseButtons.Right, newMouseState));
+
+                if (newMouseState.MiddleButton == ButtonState.Pressed)
+                {
+                    if (oldMouseState.MiddleButton == ButtonState.Released)
+                        InputElementManager.OnMouseDown(new MouseEventArgs(MouseButtons.Middle, newMouseState));
+                }
+                else if (oldMouseState.MiddleButton == ButtonState.Pressed)
+                    InputElementManager.OnMouseUp(new MouseEventArgs(MouseButtons.Middle, newMouseState));
+
+                if (newMouseState.XButton1 == ButtonState.Pressed)
+                {
+                    if (oldMouseState.XButton1 == ButtonState.Released)
+                        InputElementManager.OnMouseDown(new MouseEventArgs(MouseButtons.X1, newMouseState));
+                }
+                else if (oldMouseState.XButton1 == ButtonState.Pressed)
+                    InputElementManager.OnMouseUp(new MouseEventArgs(MouseButtons.X1, newMouseState));
+
+                if (newMouseState.XButton2 == ButtonState.Pressed)
+                {
+                    if (oldMouseState.XButton2 == ButtonState.Released)
+                        InputElementManager.OnMouseDown(new MouseEventArgs(MouseButtons.X2, newMouseState));
+                }
+                else if (oldMouseState.XButton2 == ButtonState.Pressed)
+                    InputElementManager.OnMouseUp(new MouseEventArgs(MouseButtons.X2, newMouseState));
+
+                oldMouseState = newMouseState;
             }
         }
 
