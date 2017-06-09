@@ -17,6 +17,8 @@ namespace DestroyNobots
         GraphicsDeviceManager graphics;
         Screen currentScreen;
 
+        public Texture2D BlankTexture { get; private set; }
+
         public TimerManager TimerManager { get; private set; }
         public SpriteBatch SpriteBatch { get; private set; }
         public EntityManager EntityManager { get; private set; }
@@ -100,6 +102,9 @@ namespace DestroyNobots
         /// </summary>
         protected override void LoadContent()
         {
+            BlankTexture = new Texture2D(GraphicsDevice, 1, 1);
+            BlankTexture.SetData(new Color[] { Color.White });
+
             TextureManager = new TextureManager(this);
 
             SpriteBatch = new SpriteBatch(GraphicsDevice);

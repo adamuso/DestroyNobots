@@ -14,6 +14,8 @@ namespace DestroyNobots.UI
         private bool visible;
         private float fontScale;
 
+        public int HorizontalScroll { get; set; }
+        public Rectangle Bounds { get { return new Rectangle(Position, Size); } }
         public Point Position { get; set; }
         public Point Size { get; set; }
         #endregion
@@ -28,6 +30,12 @@ namespace DestroyNobots.UI
         public int SelectionEnd { get { return caretPosition > selectionAnchor ? caretPosition : selectionAnchor; } }
         #endregion
 
+        #region Components
+        private AssemblerEditorScrollbar horizontalScrollBar;
+        private AssemblerEditorScrollbar verticalScrollBar;
+
+        #endregion
+
         public GUI GUI { get; set; }
         public DestroyNobotsGame Game { get { return GUI.Game; } }
 
@@ -37,14 +45,16 @@ namespace DestroyNobots.UI
             selectionAnchor = -1;
             clipboard = null;
             fontScale = 12 / 48.0f;
+            verticalScrollBar = new AssemblerEditorScrollbar(this);
+            horizontalScrollBar = new AssemblerEditorScrollbar(this) { IsHorizontal = true };
 
-            Size = new Point(200, 200);
+            Size = new Point(300, 300);
         }
 
         public void Show()
         {
             visible = true;
-            Focus();
+            GUI.Game.InputManager.InputElementManager.Root = this;
         }
 
         public void Hide()
@@ -52,9 +62,16 @@ namespace DestroyNobots.UI
             visible = false;
         }
 
-        public void Focus()
+        public float GetTextWidth()
         {
-            GUI.Game.InputManager.FocusedElement = this;
+            string[] lines = text.ToString().Split('\n');
+            string maxLine = lines[0];
+
+            for (int i = 1; i < lines.Length; i++)
+                if (maxLine.Length < lines[i].Length)
+                    maxLine = lines[i];
+
+            return (Game.EditorFont.MeasureString(maxLine) * fontScale).X;
         }
 
         void IInputElement.OnKeyDown(KeyboardEventArgs e)
@@ -131,8 +148,22 @@ namespace DestroyNobots.UI
 
                 if (e.Key == Keys.Enter)
                 {
+                    int line, pos;
+                    GetLineNumberAndPositionFromIndex(caretPosition, out line, out pos);
+
                     text.Insert(caretPosition, "\n");
                     caretPosition++;
+                    
+                    string[] lines = text.ToString().Split('\n');
+
+                    for (int i = 0; i < lines[line].Length; i++)
+                        if (char.IsWhiteSpace(lines[line][i]))
+                        {
+                            text.Insert(caretPosition, lines[line][i]);
+                            caretPosition++;
+                        }
+                        else
+                            break;
                 }
 
                 if (e.Key == Keys.OemMinus)
@@ -246,7 +277,13 @@ namespace DestroyNobots.UI
                 }
             }
 
-            if(!e.Control)
+            if (e.Key == Keys.NumPad4)
+                HorizontalScroll += 1;
+
+            if (e.Key == Keys.NumPad6)
+                HorizontalScroll -= 1;
+
+            if (!e.Control)
             { 
                 if (e.Key == Keys.Back && (caretPosition > 0 || selectionAnchor != -1))
                 {
@@ -291,8 +328,92 @@ namespace DestroyNobots.UI
 
             if (e.Key == Keys.Tab)
             {
-                text.Insert(caretPosition, "    ");
-                caretPosition += 4;
+                if (selectionAnchor == -1)
+                {
+                    if (e.Shift)
+                    {
+                        int line, pos;
+                        GetLineNumberAndPositionFromIndex(caretPosition, out line, out pos);
+
+                        string[] lines = text.ToString().Split('\n');
+                        int count = 0;
+
+                        for (int i = pos - 1; i >= 0 && count < 4; i--, count++)
+                            if (char.IsWhiteSpace(lines[line][i]) && lines[line][i] != '\n')
+                            {
+                                text.Remove(caretPosition - 1, 1);
+                                caretPosition--;
+                            }
+                            else
+                                break;
+                    }
+                    else
+                    {
+                        text.Insert(caretPosition, "    ");
+                        caretPosition += 4;
+                    }
+                }
+                else
+                {
+                    if(e.Shift)
+                    {
+                        int startLine, startPos, endLine, endPos;
+                        GetLineNumberAndPositionFromIndex(SelectionStart, out startLine, out startPos);
+                        GetLineNumberAndPositionFromIndex(SelectionEnd, out endLine, out endPos);
+
+                        for (int i = startLine; i <= endLine; i++)
+                        {
+                            for (int j = 3; j >= 0; j--)
+                            {
+                                int pos = GetIndexFromLineNumberAndPosition(i, j);
+
+                                if (pos >= text.Length)
+                                    continue;
+
+                                if (char.IsWhiteSpace(text[pos]) && text[pos] != '\n')
+                                {
+                                    text.Remove(pos, 1);
+
+                                    if (SelectionStart == caretPosition)
+                                    {
+                                        if (i == startLine)
+                                            caretPosition -= 1;
+
+                                        selectionAnchor -= 1;
+                                    }
+                                    else
+                                    {
+                                        if (i == startLine)
+                                            selectionAnchor -= 1;
+
+                                        caretPosition -= 1;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        int startLine, startPos, endLine, endPos;
+                        GetLineNumberAndPositionFromIndex(SelectionStart, out startLine, out startPos);
+                        GetLineNumberAndPositionFromIndex(SelectionEnd, out endLine, out endPos);
+
+                        for (int i = startLine; i <= endLine; i++)
+                        {
+                            text.Insert(GetIndexFromLineNumberAndPosition(i, 0), "    ");
+
+                            if (SelectionStart == caretPosition)
+                                selectionAnchor += 4;
+                            else
+                                caretPosition += 4;
+                        }
+
+                        if (SelectionStart == caretPosition)
+                            caretPosition += 4;
+                        else
+                            selectionAnchor += 4;
+                    }
+                }
             }
 
             if(e.Key == Keys.Delete && caretPosition < text.Length)
@@ -418,9 +539,19 @@ namespace DestroyNobots.UI
             string[] lines = text.ToString().Split('\n');
 
             if (line < 0 || line >= lines.Length)
-                return; 
+                return;
 
-            caretPosition = 0;
+            caretPosition = GetIndexFromLineNumberAndPosition(line, pos);
+        }
+
+        private int GetIndexFromLineNumberAndPosition(int line, int pos)
+        {
+            string[] lines = text.ToString().Split('\n');
+
+            if (line < 0 || line >= lines.Length)
+                return -1;
+
+            int caretPosition = 0;
 
             if (line >= lines.Length - 1)
                 line = lines.Length - 1;
@@ -433,7 +564,7 @@ namespace DestroyNobots.UI
             if (pos > lines[line].Length)
                 pos = lines[line].Length;
 
-            caretPosition += pos;
+            return caretPosition + pos;
         }
 
         private void GetLineNumberAndPositionFromIndex(int index, out int line, out int pos)
@@ -500,11 +631,24 @@ namespace DestroyNobots.UI
 
                 for (int i = 0; i < lines.Length; i++)
                 {
-                    Game.SpriteBatch.DrawString(Game.EditorFont, lines[i], new Vector2(Position.X, Position.Y + i * 15), new Color(220, 220, 220, 255), 0, Vector2.Zero, fontScale, SpriteEffects.None, 0);
+                    Game.SpriteBatch.DrawString(Game.EditorFont, lines[i], new Vector2(Position.X - HorizontalScroll, Position.Y + i * 15), new Color(220, 220, 220, 255), 0, Vector2.Zero, fontScale, SpriteEffects.None, 0);
                 }
 
                 Vector2 size = Game.EditorFont.MeasureString(lines[line].Substring(0, pos)) * fontScale;
-                Game.SpriteBatch.Draw(texture, new Rectangle(Position.X + (int)size.X, Position.Y + line * 15, 1, 15), Color.White);
+                Rectangle caretRectangle = new Rectangle(Position.X - HorizontalScroll + (int)size.X, Position.Y + line * 15, 1, 15);
+                Game.SpriteBatch.Draw(texture, caretRectangle, Color.White);
+
+                while (caretRectangle.X > Bounds.Right - 20)
+                {
+                    HorizontalScroll += 60;
+                    caretRectangle = new Rectangle(Position.X - HorizontalScroll + (int)size.X, Position.Y + line * 15, 1, 15);
+                }
+
+                while (caretRectangle.X < Bounds.Left)
+                { 
+                    HorizontalScroll = MathHelper.Clamp(HorizontalScroll - 60, 0, HorizontalScroll);
+                    caretRectangle = new Rectangle(Position.X - HorizontalScroll + (int)size.X, Position.Y + line * 15, 1, 15);
+                }
 
                 if (selectionAnchor != -1)
                 {
@@ -532,12 +676,30 @@ namespace DestroyNobots.UI
                         else
                             size = Game.EditorFont.MeasureString(lines[i]) * fontScale;
 
-                        Game.SpriteBatch.Draw(texture, new Rectangle(Position.X + (int)offset.X, Position.Y + i * 15, (int)size.X, 15), new Color(128, 128, 128, 100));
+                        Game.SpriteBatch.Draw(texture, new Rectangle(Position.X - HorizontalScroll + (int)offset.X, Position.Y + i * 15, (int)size.X, 15), new Color(128, 128, 128, 100));
                     }
                 }
             }
 
             Game.GraphicsDevice.ScissorRectangle = @default;
+
+            horizontalScrollBar.Draw(gt);
+            verticalScrollBar.Draw(gt);
+        }
+
+        public void OnMouseMove(MouseEventArgs e)
+        {
+
+        }
+
+        public void OnMouseDown(MouseEventArgs e)
+        {
+
+        }
+
+        public void OnMouseUp(MouseEventArgs e)
+        {
+
         }
     }
 }
