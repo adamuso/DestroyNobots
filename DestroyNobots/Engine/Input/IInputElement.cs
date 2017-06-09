@@ -4,6 +4,7 @@ namespace DestroyNobots.Engine.Input
 {
     public interface IInputElement
     {
+        bool IsFocusable { get; }
         Rectangle Bounds { get; }
 
         void OnKeyDown(KeyboardEventArgs e);

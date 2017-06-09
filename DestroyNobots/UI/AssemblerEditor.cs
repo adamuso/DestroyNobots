@@ -4,16 +4,20 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System.Text;
 using Microsoft.Xna.Framework.Graphics;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace DestroyNobots.UI
 {
-    public class AssemblerEditor : IRenderable, IInputElement
+    public class AssemblerEditor : IRenderable, IInputElementContainer
     {
         #region Drawing variables and properties
         private Texture2D texture;
         private bool visible;
         private float fontScale;
 
+        public int LineHeight { get { return (int)(60 * fontScale); } }
+        public int VerticalScroll { get; set; }
         public int HorizontalScroll { get; set; }
         public Rectangle Bounds { get { return new Rectangle(Position, Size); } }
         public Point Position { get; set; }
@@ -25,6 +29,7 @@ namespace DestroyNobots.UI
         private int selectionAnchor;
         private int caretPosition;
         private string clipboard;
+        private int caretAccumulator;
 
         public int SelectionStart { get { return caretPosition > selectionAnchor ? selectionAnchor : caretPosition; } }
         public int SelectionEnd { get { return caretPosition > selectionAnchor ? caretPosition : selectionAnchor; } }
@@ -33,20 +38,27 @@ namespace DestroyNobots.UI
         #region Components
         private AssemblerEditorScrollbar horizontalScrollBar;
         private AssemblerEditorScrollbar verticalScrollBar;
-
         #endregion
 
+        IEnumerable<IInputElement> IInputElementContainer.Children { get { return Children; } }
+        public List<IInputElement> Children { get; private set; }
+        public bool IsFocusable { get { return true; } }
         public GUI GUI { get; set; }
         public DestroyNobotsGame Game { get { return GUI.Game; } }
 
         public AssemblerEditor()
         {
+            Children = new List<IInputElement>();
+
             text = new StringBuilder("");
             selectionAnchor = -1;
             clipboard = null;
             fontScale = 12 / 48.0f;
             verticalScrollBar = new AssemblerEditorScrollbar(this);
             horizontalScrollBar = new AssemblerEditorScrollbar(this) { IsHorizontal = true };
+
+            Children.Add(verticalScrollBar);
+            Children.Add(horizontalScrollBar);
 
             Size = new Point(300, 300);
         }
@@ -72,6 +84,12 @@ namespace DestroyNobots.UI
                     maxLine = lines[i];
 
             return (Game.EditorFont.MeasureString(maxLine) * fontScale).X;
+        }
+
+        public int GetLineCount()
+        {
+            int count = text.ToString().Count(p => p == '\n');
+            return count <= 0 ? 1 : count;
         }
 
         private void SetLineNumberAndPosition(int line, int pos)
@@ -142,6 +160,7 @@ namespace DestroyNobots.UI
             HandleTextDeletion(e);
             HandleTab(e);
             HandleTextOperations(e);
+            ScrollToCaret();
 
             if (e.Control)
             {
@@ -630,16 +649,101 @@ namespace DestroyNobots.UI
             line++;
             SetLineNumberAndPosition(line, pos);
         }
+
+        private void ScrollToCaret()
+        {
+            string[] lines = text.ToString().Split('\n');
+            int line, pos;
+            GetLineNumberAndPositionFromIndex(caretPosition, out line, out pos);
+            Vector2 size = Game.EditorFont.MeasureString(lines[line].Substring(0, pos)) * fontScale;
+            Rectangle caretRectangle = new Rectangle(Position.X - HorizontalScroll + (int)size.X, Position.Y + line * LineHeight - VerticalScroll * LineHeight, 1, LineHeight);
+
+            // scrolling to caret
+            while (caretRectangle.X > Bounds.Right - 20)
+            {
+                HorizontalScroll += 60;
+                caretRectangle = new Rectangle(Position.X - HorizontalScroll + (int)size.X, Position.Y + line * LineHeight - VerticalScroll * LineHeight, 1, LineHeight);
+            }
+
+            while (caretRectangle.X < Bounds.Left)
+            {
+                HorizontalScroll = MathHelper.Clamp(HorizontalScroll - 60, 0, HorizontalScroll);
+                caretRectangle = new Rectangle(Position.X - HorizontalScroll + (int)size.X, Position.Y + line * LineHeight - VerticalScroll * LineHeight, 1, LineHeight);
+            }
+
+            while (caretRectangle.Y > Bounds.Bottom - 20)
+            {
+                VerticalScroll += 1;
+                caretRectangle = new Rectangle(Position.X - HorizontalScroll + (int)size.X, Position.Y + line * LineHeight - VerticalScroll * LineHeight, 1, LineHeight);
+            }
+
+            while (caretRectangle.Y < Bounds.Top)
+            {
+                VerticalScroll = MathHelper.Clamp(VerticalScroll - 1, 0, VerticalScroll);
+                caretRectangle = new Rectangle(Position.X - HorizontalScroll + (int)size.X, Position.Y + line * LineHeight - VerticalScroll * LineHeight, 1, LineHeight);
+            }
+
+            horizontalScrollBar.UpdateOffsets();
+            verticalScrollBar.UpdateOffsets();
+        }
         #endregion
+
+        private Tuple<string, Color>[] HighlightText(string text, Color @default)
+        {
+            List<string> keywords = new List<string>() { "mov", "add", "sub", "dec", "inc", "jmp", "call", "ret", "cmp" };
+            List<Tuple<string, Color>> data = new List<Tuple<string, Color>>();
+            string[] words = text.Split(' ', ',');
+            string connect = "";
+            string separator;
+            int separatorOffset = 0;
+
+            for(int i = 0; i < words.Length; i++)
+            {
+                if (words[i].Length + separatorOffset < text.Length)
+                    separator = "" + text[words[i].Length + separatorOffset];
+                else
+                    separator = "";
+
+                separatorOffset += words[i].Length + 1;
+
+                if (keywords.Contains(words[i]))
+                {
+                    if (!string.IsNullOrEmpty(connect))
+                        data.Add(new Tuple<string, Color>(connect, @default));
+
+                    connect = separator;
+                    data.Add(new Tuple<string, Color>(words[i], new Color(30, 140, 230, 255)));
+                }
+                else if(words[i].Length > 0 && words[i].All(p => char.IsDigit(p) || p == 'x'))
+                {
+                    if (!string.IsNullOrEmpty(connect))
+                        data.Add(new Tuple<string, Color>(connect, @default));
+
+                    connect = separator;
+                    data.Add(new Tuple<string, Color>(words[i], new Color(150, 180, 150, 255)));
+                }
+                else
+                    connect += words[i] + separator;
+            }
+
+            if (!string.IsNullOrEmpty(connect))
+                data.Add(new Tuple<string, Color>(connect, @default));
+
+            return data.ToArray();
+        }
 
         public void Draw(GameTime gt)
         {
+            if (!visible)
+                return;
+
             if (texture == null)
             {
                 texture = new Texture2D(Game.GraphicsDevice, 1, 1);
                 texture.SetData(new Color[] { Color.White });
             }
 
+            // drawing background
             Game.SpriteBatch.Draw(texture, new Rectangle(Position, Size), new Color(30, 30, 30, 255));
 
             Rectangle @default = Game.GraphicsDevice.ScissorRectangle;
@@ -649,29 +753,9 @@ namespace DestroyNobots.UI
             {
                 string[] lines = text.ToString().Split('\n');
                 int line, pos;
-                GetLineNumberAndPositionFromIndex(caretPosition, out line, out pos);
+                Vector2 size;
 
-                for (int i = 0; i < lines.Length; i++)
-                {
-                    Game.SpriteBatch.DrawString(Game.EditorFont, lines[i], new Vector2(Position.X - HorizontalScroll, Position.Y + i * 15), new Color(220, 220, 220, 255), 0, Vector2.Zero, fontScale, SpriteEffects.None, 0);
-                }
-
-                Vector2 size = Game.EditorFont.MeasureString(lines[line].Substring(0, pos)) * fontScale;
-                Rectangle caretRectangle = new Rectangle(Position.X - HorizontalScroll + (int)size.X, Position.Y + line * 15, 1, 15);
-                Game.SpriteBatch.Draw(texture, caretRectangle, Color.White);
-
-                while (caretRectangle.X > Bounds.Right - 20)
-                {
-                    HorizontalScroll += 60;
-                    caretRectangle = new Rectangle(Position.X - HorizontalScroll + (int)size.X, Position.Y + line * 15, 1, 15);
-                }
-
-                while (caretRectangle.X < Bounds.Left)
-                { 
-                    HorizontalScroll = MathHelper.Clamp(HorizontalScroll - 60, 0, HorizontalScroll);
-                    caretRectangle = new Rectangle(Position.X - HorizontalScroll + (int)size.X, Position.Y + line * 15, 1, 15);
-                }
-
+                // drawing selection
                 if (selectionAnchor != -1)
                 {
                     int startLine, startPos;
@@ -679,7 +763,7 @@ namespace DestroyNobots.UI
                     GetLineNumberAndPositionFromIndex(SelectionStart, out startLine, out startPos);
                     GetLineNumberAndPositionFromIndex(SelectionEnd, out line, out pos);
 
-                    for(int i = startLine; i <= line; i++)
+                    for (int i = startLine; i <= line; i++)
                     {
                         Vector2 offset = Vector2.Zero;
 
@@ -698,30 +782,89 @@ namespace DestroyNobots.UI
                         else
                             size = Game.EditorFont.MeasureString(lines[i]) * fontScale;
 
-                        Game.SpriteBatch.Draw(texture, new Rectangle(Position.X - HorizontalScroll + (int)offset.X, Position.Y + i * 15, (int)size.X, 15), new Color(128, 128, 128, 100));
+                        Game.SpriteBatch.Draw(texture, new Rectangle(Position.X - HorizontalScroll + (int)offset.X, Position.Y + i * LineHeight - VerticalScroll * LineHeight, (int)size.X, LineHeight), new Color(40, 80, 120, 255));
                     }
+                }
+
+                // drawing text
+                GetLineNumberAndPositionFromIndex(caretPosition, out line, out pos);
+
+                for (int i = VerticalScroll; i < lines.Length; i++)
+                {
+                    if (Position.Y + i * LineHeight - VerticalScroll * LineHeight > Size.Y)
+                        break;
+
+                    Tuple<string, Color>[] data = HighlightText(lines[i], new Color(220, 220, 220, 255));
+                    float xpos = 0;
+
+                    for(int j = 0; j < data.Length; j++)
+                    {
+                        Game.SpriteBatch.DrawString(Game.EditorFont, data[j].Item1, new Vector2(Position.X - HorizontalScroll + xpos, Position.Y + i * LineHeight - VerticalScroll * LineHeight), data[j].Item2, 0, Vector2.Zero, fontScale, SpriteEffects.None, 0);
+                        xpos += Game.EditorFont.MeasureString(data[j].Item1).X * fontScale;
+                    }
+
+                    //Game.SpriteBatch.DrawString(Game.EditorFont, lines[i], new Vector2(Position.X - HorizontalScroll, Position.Y + i * LineHeight - VerticalScroll * LineHeight), new Color(220, 220, 220, 255), 0, Vector2.Zero, fontScale, SpriteEffects.None, 0);
+                }
+
+                // drawing caret
+                size = Game.EditorFont.MeasureString(lines[line].Substring(0, pos)) * fontScale;
+                Rectangle caretRectangle = new Rectangle(Position.X - HorizontalScroll + (int)size.X, Position.Y + line * LineHeight - VerticalScroll * LineHeight, 1, LineHeight);
+
+                caretAccumulator += (int)gt.ElapsedGameTime.TotalMilliseconds;
+
+                if (caretAccumulator > 400)
+                {
+                    Game.SpriteBatch.Draw(texture, caretRectangle, Color.White);
+
+                    if (caretAccumulator > 800)
+                        caretAccumulator -= 800;
                 }
             }
 
             Game.GraphicsDevice.ScissorRectangle = @default;
 
-            horizontalScrollBar.Draw(gt);
-            verticalScrollBar.Draw(gt);
+            
+            foreach(IInputElement child in Children)
+            {
+                if(child is IRenderable)
+                    ((IRenderable)child).Draw(gt);
+            }
         }
 
         public void OnMouseMove(MouseEventArgs e)
         {
+            foreach(IInputElement child in Children)
+            {
+                if (child.Bounds.Contains(e.State.Position))
+                    child.OnMouseMove(e);
 
+                if (e.Handled)
+                    break;
+            }
         }
 
         public void OnMouseDown(MouseEventArgs e)
         {
+            foreach (IInputElement child in Children)
+            {
+                if (child.Bounds.Contains(e.State.Position))
+                    child.OnMouseDown(e);
 
+                if (e.Handled)
+                    break;
+            }
         }
 
         public void OnMouseUp(MouseEventArgs e)
         {
+            foreach (IInputElement child in Children)
+            {
+                if (child.Bounds.Contains(e.State.Position))
+                    child.OnMouseUp(e);
 
+                if (e.Handled)
+                    break;
+            }
         }
     }
 }
