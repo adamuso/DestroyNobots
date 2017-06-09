@@ -9,15 +9,24 @@ namespace DestroyNobots.UI
 {
     public class AssemblerEditor : IRenderable, IInputElement
     {
+        #region Drawing variables and properties
         private Texture2D texture;
-        private StringBuilder text;
         private bool visible;
+        private float fontScale;
+
+        public Point Position { get; set; }
+        public Point Size { get; set; }
+        #endregion
+
+        #region Text variables and properties
+        private StringBuilder text;
         private int selectionAnchor;
-        private int position;
+        private int caretPosition;
         private string clipboard;
 
-        public int SelectionStart { get { return position > selectionAnchor ? selectionAnchor : position; } }
-        public int SelectionEnd { get { return position > selectionAnchor ? position : selectionAnchor; } }
+        public int SelectionStart { get { return caretPosition > selectionAnchor ? selectionAnchor : caretPosition; } }
+        public int SelectionEnd { get { return caretPosition > selectionAnchor ? caretPosition : selectionAnchor; } }
+        #endregion
 
         public GUI GUI { get; set; }
         public DestroyNobotsGame Game { get { return GUI.Game; } }
@@ -27,6 +36,9 @@ namespace DestroyNobots.UI
             text = new StringBuilder("");
             selectionAnchor = -1;
             clipboard = null;
+            fontScale = 12 / 48.0f;
+
+            Size = new Point(200, 200);
         }
 
         public void Show()
@@ -47,58 +59,206 @@ namespace DestroyNobots.UI
 
         void IInputElement.OnKeyDown(KeyboardEventArgs e)
         {
-            if (!e.Control)
+            if (!e.Control && (
+                    e.KeyCode >= (int)Keys.D0 && e.KeyCode <= (int)Keys.D9 ||
+                    e.KeyCode >= (int)Keys.A && e.KeyCode <= (int)Keys.Z ||
+                    e.Key == Keys.Space ||
+                    e.Key == Keys.Enter ||
+                    e.Key == Keys.OemMinus ||
+                    e.Key == Keys.OemPlus ||
+                    e.Key == Keys.OemOpenBrackets ||
+                    e.Key == Keys.OemCloseBrackets ||
+                    e.Key == Keys.OemComma ||
+                    e.Key == Keys.OemSemicolon ||
+                    e.Key == Keys.OemPipe ||
+                    e.Key == Keys.OemQuotes ||
+                    e.Key == Keys.OemPeriod ||
+                    e.Key == Keys.OemQuestion ||
+                    e.Key == Keys.OemTilde
+                ))
             {
-                if(e.KeyCode >= (int)Keys.D0 && e.KeyCode <= (int)Keys.D9)
+                if (selectionAnchor != -1)
+                {
+                    text.Remove(SelectionStart, SelectionEnd - SelectionStart);
+                    caretPosition = SelectionStart;
+                    selectionAnchor = -1;
+                }
+
+                // insert keys
+
+                if (e.KeyCode >= (int)Keys.D0 && e.KeyCode <= (int)Keys.D9)
                 {
                     if (e.Shift)
                     {
+                        switch (e.Key)
+                        {
+                            case Keys.D0: text.Insert(caretPosition, ")"); break;
+                            case Keys.D1: text.Insert(caretPosition, "!"); break;
+                            case Keys.D2: text.Insert(caretPosition, "@"); break;
+                            case Keys.D3: text.Insert(caretPosition, "#"); break;
+                            case Keys.D4: text.Insert(caretPosition, "$"); break;
+                            case Keys.D5: text.Insert(caretPosition, "%"); break;
+                            case Keys.D6: text.Insert(caretPosition, "^"); break;
+                            case Keys.D7: text.Insert(caretPosition, "&"); break;
+                            case Keys.D8: text.Insert(caretPosition, "*"); break;
+                            case Keys.D9: text.Insert(caretPosition, "("); break;
+                        }
 
+                        caretPosition++;
                     }
                     else
                     {
-                        text.Insert(position, (char)(e.KeyCode));
-                        position++;
+                        text.Insert(caretPosition, (char)(e.KeyCode));
+                        caretPosition++;
                     }
                 }
 
                 if (e.KeyCode >= (int)Keys.A && e.KeyCode <= (int)Keys.Z)
                 {
                     if (e.Shift || e.CapsLock)
-                    {
-                        text.Insert(position, (char)e.KeyCode);
-                        position++;
-                    }
+                        text.Insert(caretPosition, (char)e.KeyCode);
                     else
-                    {
-                        text.Insert(position, (char)(e.KeyCode + 32));
-                        position++;
-                    }
+                        text.Insert(caretPosition, (char)(e.KeyCode + 32));
+
+                    caretPosition++;
                 }
 
                 if (e.Key == Keys.Space)
                 {
-                    text.Insert(position, " ");
-                    position++;
+                    text.Insert(caretPosition, " ");
+                    caretPosition++;
                 }
 
                 if (e.Key == Keys.Enter)
                 {
-                    text.Insert(position, "\n");
-                    position++;
+                    text.Insert(caretPosition, "\n");
+                    caretPosition++;
                 }
 
-                if (e.Key == Keys.Back && (position > 0 || selectionAnchor != -1))
+                if (e.Key == Keys.OemMinus)
+                {
+                    if (e.Shift)
+                        text.Insert(caretPosition, "_");
+                    else
+                        text.Insert(caretPosition, "-");
+
+                    caretPosition++;
+                }
+
+                if (e.Key == Keys.OemPlus)
+                {
+                    if (e.Shift)
+                        text.Insert(caretPosition, "+");
+                    else
+                        text.Insert(caretPosition, "=");
+
+                    caretPosition++;
+                }
+
+                if (e.Key == Keys.OemOpenBrackets)
+                {
+                    if (e.Shift)
+                        text.Insert(caretPosition, "{");
+                    else
+                        text.Insert(caretPosition, "[");
+
+                    caretPosition++;
+                }
+
+                if (e.Key == Keys.OemCloseBrackets)
+                {
+                    if (e.Shift)
+                        text.Insert(caretPosition, "}");
+                    else
+                        text.Insert(caretPosition, "]");
+
+                    caretPosition++;
+                }
+
+                if (e.Key == Keys.OemComma)
+                {
+                    if (e.Shift)
+                        text.Insert(caretPosition, "<");
+                    else
+                        text.Insert(caretPosition, ",");
+
+                    caretPosition++;
+                }
+
+                if (e.Key == Keys.OemSemicolon)
+                {
+                    if (e.Shift)
+                        text.Insert(caretPosition, ":");
+                    else
+                        text.Insert(caretPosition, ";");
+
+                    caretPosition++;
+                }
+
+                if (e.Key == Keys.OemPipe)
+                {
+                    if (e.Shift)
+                        text.Insert(caretPosition, "|");
+                    else
+                        text.Insert(caretPosition, "\\");
+
+                    caretPosition++;
+                }
+
+                if (e.Key == Keys.OemQuotes)
+                {
+                    if (e.Shift)
+                        text.Insert(caretPosition, "\"");
+                    else
+                        text.Insert(caretPosition, "'");
+
+                    caretPosition++;
+                }
+
+                if (e.Key == Keys.OemPeriod)
+                {
+                    if (e.Shift)
+                        text.Insert(caretPosition, ">");
+                    else
+                        text.Insert(caretPosition, ".");
+
+                    caretPosition++;
+                }
+
+                if (e.Key == Keys.OemQuestion)
+                {
+                    if (e.Shift)
+                        text.Insert(caretPosition, "?");
+                    else
+                        text.Insert(caretPosition, "/");
+
+                    caretPosition++;
+                }
+
+                if (e.Key == Keys.OemTilde)
+                {
+                    if (e.Shift)
+                        text.Insert(caretPosition, "~");
+                    else
+                        text.Insert(caretPosition, "`");
+
+                    caretPosition++;
+                }
+            }
+
+            if(!e.Control)
+            { 
+                if (e.Key == Keys.Back && (caretPosition > 0 || selectionAnchor != -1))
                 {
                     if (selectionAnchor == -1)
                     {
-                        text.Remove(position - 1, 1);
-                        position--;
+                        text.Remove(caretPosition - 1, 1);
+                        caretPosition--;
                     }
                     else
                     {
                         text.Remove(SelectionStart, SelectionEnd - SelectionStart);
-                        position = SelectionStart;
+                        caretPosition = SelectionStart;
                         selectionAnchor = -1;
                     }
                 }
@@ -109,13 +269,13 @@ namespace DestroyNobots.UI
                     if (!e.Shift)
                         selectionAnchor = -1;
                     else if (selectionAnchor == -1)
-                        selectionAnchor = position;
+                        selectionAnchor = caretPosition;
 
-                    if (e.Key == Keys.Left && position > 0)
-                        position--;
+                    if (e.Key == Keys.Left && caretPosition > 0)
+                        caretPosition--;
 
-                    if (e.Key == Keys.Right && position < text.Length)
-                        position++;
+                    if (e.Key == Keys.Right && caretPosition < text.Length)
+                        caretPosition++;
 
                     if (e.Key == Keys.Up)
                     {
@@ -129,42 +289,22 @@ namespace DestroyNobots.UI
                 }
             }
 
-            if(e.Key == Keys.OemComma)
-            {
-                text.Insert(position, ",");
-                position++;
-            }
-
-            if (e.Key == Keys.OemSemicolon)
-            {
-                if (e.Shift)
-                {
-                    text.Insert(position, ":");
-                    position++;
-                }
-                else
-                {
-                    text.Insert(position, ";");
-                    position++;
-                }
-            }
-
             if (e.Key == Keys.Tab)
             {
-                text.Insert(position, "    ");
-                position += 4;
+                text.Insert(caretPosition, "    ");
+                caretPosition += 4;
             }
 
-            if(e.Key == Keys.Delete && position < text.Length)
+            if(e.Key == Keys.Delete && caretPosition < text.Length)
             {
                 if(selectionAnchor == -1)
                 {
-                    text.Remove(position, 1);
+                    text.Remove(caretPosition, 1);
                 }
                 else
                 {
                     text.Remove(SelectionStart, SelectionEnd - SelectionStart);
-                    position = SelectionStart;
+                    caretPosition = SelectionStart;
                     selectionAnchor = -1;
                 }
             }
@@ -180,7 +320,7 @@ namespace DestroyNobots.UI
                 {
                     clipboard = text.ToString(SelectionStart, SelectionEnd - SelectionStart);
                     text.Remove(SelectionStart, SelectionEnd - SelectionStart);
-                    position = SelectionStart;
+                    caretPosition = SelectionStart;
                     selectionAnchor = -1;
                 }
 
@@ -189,12 +329,12 @@ namespace DestroyNobots.UI
                     if (selectionAnchor != -1)
                     {
                         text.Remove(SelectionStart, SelectionEnd - SelectionStart);
-                        position = SelectionStart;
+                        caretPosition = SelectionStart;
                         selectionAnchor = -1;
                     }
 
-                    text.Insert(position, clipboard);
-                    position += clipboard.Length;
+                    text.Insert(caretPosition, clipboard);
+                    caretPosition += clipboard.Length;
                 }
 
                 if(e.Key == Keys.B)
@@ -207,30 +347,30 @@ namespace DestroyNobots.UI
                     Game.b.Computer.PowerUp();
                 }
 
-                if (e.Key == Keys.Back && (position > 0 || selectionAnchor != -1))
+                if (e.Key == Keys.Back && (caretPosition > 0 || selectionAnchor != -1))
                 {
                     if (selectionAnchor == -1)
                     {
                         int removed = 0;
 
-                        while (position > 0 && ((!char.IsWhiteSpace(text[position - 1]) && text[position - 1] != ',') || removed == 0))
+                        while (caretPosition > 0 && ((!char.IsWhiteSpace(text[caretPosition - 1]) && text[caretPosition - 1] != ',') || removed == 0))
                         {
-                            text.Remove(position - 1, 1);
-                            position--;
+                            text.Remove(caretPosition - 1, 1);
+                            caretPosition--;
                             removed++;
                         }
 
-                        if(position > 0)
+                        if(caretPosition > 0)
                         {
-                            text.Remove(position - 1, 1);
-                            position--;
+                            text.Remove(caretPosition - 1, 1);
+                            caretPosition--;
                             removed++;
                         }
                     }
                     else
                     {
                         text.Remove(SelectionStart, SelectionEnd - SelectionStart);
-                        position = SelectionStart;
+                        caretPosition = SelectionStart;
                         selectionAnchor = -1;
                     }
                 }
@@ -241,26 +381,26 @@ namespace DestroyNobots.UI
                     if (!e.Shift)
                         selectionAnchor = -1;
                     else if (selectionAnchor == -1)
-                        selectionAnchor = position;
+                        selectionAnchor = caretPosition;
 
-                    if (e.Key == Keys.Left && position > 0)
+                    if (e.Key == Keys.Left && caretPosition > 0)
                     {
                         int skipped = 0;
 
-                        while (position > 0 && ((!char.IsWhiteSpace(text[position - 1]) && text[position - 1] != ',') || skipped == 0))
+                        while (caretPosition > 0 && ((!char.IsWhiteSpace(text[caretPosition - 1]) && text[caretPosition - 1] != ',') || skipped == 0))
                         {
-                            position--;
+                            caretPosition--;
                             skipped++;
                         }
                     }
 
-                    if (e.Key == Keys.Right && position < text.Length)
+                    if (e.Key == Keys.Right && caretPosition < text.Length)
                     {
                         int skipped = 0;
 
-                        while (position < text.Length && ((!char.IsWhiteSpace(text[position]) && text[position] != ',') || skipped == 0))
+                        while (caretPosition < text.Length && ((!char.IsWhiteSpace(text[caretPosition]) && text[caretPosition] != ',') || skipped == 0))
                         {
-                            position++;
+                            caretPosition++;
                             skipped++;
                         }
                     }
@@ -280,20 +420,20 @@ namespace DestroyNobots.UI
             if (line < 0 || line >= lines.Length)
                 return; 
 
-            position = 0;
+            caretPosition = 0;
 
             if (line >= lines.Length - 1)
                 line = lines.Length - 1;
 
             for (int i = 0; i < line; i++)
             {
-                position += lines[i].Length + 1;
+                caretPosition += lines[i].Length + 1;
             }
 
             if (pos > lines[line].Length)
                 pos = lines[line].Length;
 
-            position += pos;
+            caretPosition += pos;
         }
 
         private void GetLineNumberAndPositionFromIndex(int index, out int line, out int pos)
@@ -326,7 +466,7 @@ namespace DestroyNobots.UI
         private void MoveUpLine()
         {
             int line, pos;
-            GetLineNumberAndPositionFromIndex(position, out line, out pos);
+            GetLineNumberAndPositionFromIndex(caretPosition, out line, out pos);
             line--;
             SetLineNumberAndPosition(line, pos);
         }
@@ -334,7 +474,7 @@ namespace DestroyNobots.UI
         private void MoveDownLine()
         {
             int line, pos;
-            GetLineNumberAndPositionFromIndex(position, out line, out pos);
+            GetLineNumberAndPositionFromIndex(caretPosition, out line, out pos);
             line++;
             SetLineNumberAndPosition(line, pos);
         }
@@ -347,19 +487,24 @@ namespace DestroyNobots.UI
                 texture.SetData(new Color[] { Color.White });
             }
 
+            Game.SpriteBatch.Draw(texture, new Rectangle(Position, Size), new Color(30, 30, 30, 255));
+
+            Rectangle @default = Game.GraphicsDevice.ScissorRectangle;
+            Game.GraphicsDevice.ScissorRectangle = new Rectangle(Position, Size);
+
             if (visible)
             {
                 string[] lines = text.ToString().Split('\n');
                 int line, pos;
-                GetLineNumberAndPositionFromIndex(position, out line, out pos);
+                GetLineNumberAndPositionFromIndex(caretPosition, out line, out pos);
 
                 for (int i = 0; i < lines.Length; i++)
                 {
-                    Game.SpriteBatch.DrawString(Game.EditorFont, lines[i], new Vector2(20, 20 + i * 15), Color.Black);
+                    Game.SpriteBatch.DrawString(Game.EditorFont, lines[i], new Vector2(Position.X, Position.Y + i * 15), new Color(220, 220, 220, 255), 0, Vector2.Zero, fontScale, SpriteEffects.None, 0);
                 }
 
-                Vector2 size = Game.EditorFont.MeasureString(lines[line].Substring(0, pos));
-                Game.SpriteBatch.Draw(texture, new Rectangle(20 + (int)size.X, 20 + line * 15, 1, 15), Color.White);
+                Vector2 size = Game.EditorFont.MeasureString(lines[line].Substring(0, pos)) * fontScale;
+                Game.SpriteBatch.Draw(texture, new Rectangle(Position.X + (int)size.X, Position.Y + line * 15, 1, 15), Color.White);
 
                 if (selectionAnchor != -1)
                 {
@@ -374,23 +519,25 @@ namespace DestroyNobots.UI
 
                         if (startLine == line)
                         {
-                            offset = Game.EditorFont.MeasureString(lines[i].Substring(0, startPos));
-                            size = Game.EditorFont.MeasureString(lines[i].Substring(startPos, pos - startPos));
+                            offset = Game.EditorFont.MeasureString(lines[i].Substring(0, startPos)) * fontScale;
+                            size = Game.EditorFont.MeasureString(lines[i].Substring(startPos, pos - startPos)) * fontScale;
                         }
                         else if (i == startLine)
                         {
-                            offset = Game.EditorFont.MeasureString(lines[i].Substring(0, startPos));
-                            size = Game.EditorFont.MeasureString(lines[i].Substring(startPos));
+                            offset = Game.EditorFont.MeasureString(lines[i].Substring(0, startPos)) * fontScale;
+                            size = Game.EditorFont.MeasureString(lines[i].Substring(startPos)) * fontScale;
                         }
                         else if (i == line)
-                            size = Game.EditorFont.MeasureString(lines[i].Substring(0, pos));
+                            size = Game.EditorFont.MeasureString(lines[i].Substring(0, pos)) * fontScale;
                         else
-                            size = Game.EditorFont.MeasureString(lines[i]);
+                            size = Game.EditorFont.MeasureString(lines[i]) * fontScale;
 
-                        Game.SpriteBatch.Draw(texture, new Rectangle(20 + (int)offset.X, 20 + i * 15, (int)size.X, 15), new Color(128, 128, 128, 100));
+                        Game.SpriteBatch.Draw(texture, new Rectangle(Position.X + (int)offset.X, Position.Y + i * 15, (int)size.X, 15), new Color(128, 128, 128, 100));
                     }
                 }
             }
+
+            Game.GraphicsDevice.ScissorRectangle = @default;
         }
     }
 }
