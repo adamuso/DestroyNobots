@@ -18,6 +18,11 @@ namespace DestroyNobots.Engine.Entities
             RendererServices.Add<EntityRenderer>();
         }
 
+        public virtual void Initialize()
+        {
+
+        }
+
         public virtual void Update(GameTime gt)
         {
 
