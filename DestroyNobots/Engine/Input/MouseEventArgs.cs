@@ -8,11 +8,13 @@ namespace DestroyNobots.Engine.Input
     {
         public MouseButtons Button { get; private set; }
         public MouseState State { get; private set; }
+        public bool Handled { get; set; }
 
         public MouseEventArgs(MouseButtons button, MouseState state)
         {
             Button = button;
             State = state;
+            Handled = false;
         }
     }
 }
