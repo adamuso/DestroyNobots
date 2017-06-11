@@ -1,17 +1,17 @@
-﻿using System;
-using DestroyNobots.Assembler.Emulator;
+﻿using DestroyNobots.Assembler.Emulator;
 using DestroyNobots.Assembler.Emulator.Peripherals;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace DestroyNobots.Engine.Entities.Vehicles
 {
     public class Buggy : Vehicle, IPeripheral
     {
-        public override Rectangle BoundingRectangle { get { return new Rectangle(200, 200, 32, 32); } }
+        public override Rectangle BoundingRectangle { get { return new Rectangle(Transform.Position.ToPoint(), new Point(32, 32)); } }
 
         public Buggy()
         {
+            Transform.Position = new Vector2(200, 200);
+            Transform.Origin = new Vector2(16, 24);
             Computer.ConnectPeripheral(this);
         }
 
@@ -19,7 +19,9 @@ namespace DestroyNobots.Engine.Entities.Vehicles
         {
             base.Draw(gt);
 
-            Game.SpriteBatch.Draw(Game.TextureManager.BuggyTexture, new Vector2(200, 200), null, Color.White, rotation / 360.0f, new Vector2(16, 16), 1, SpriteEffects.None, 0.0f);
+            Vector2 point = Vector2.Transform(new Vector2(0, 0), Transform.Matrix);
+
+            Game.SpriteBatch.Draw(Game.TextureManager.BuggyTexture, Transform.Position, null, Color.White, Transform.Rotation, Transform.Origin, Transform.Scale, Transform.Effect, Transform.Depth);
         }
 
         public void Install()
@@ -28,7 +30,7 @@ namespace DestroyNobots.Engine.Entities.Vehicles
             {
                 Out = (value, size) =>
                 {
-                    rotation = value;
+                    Transform.Rotation = value / 360.0f;
                 }
             };
         }

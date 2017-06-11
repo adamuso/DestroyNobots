@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 
 namespace DestroyNobots.Engine.Entities
 {
@@ -8,10 +7,13 @@ namespace DestroyNobots.Engine.Entities
         public bool Destroyed { get; private set; }
         public DestroyNobotsGame Game { get; set; }
         public RendererServiceContainer RendererServices { get; private set; }
+        public Transform Transform { get; set; }
         public virtual Rectangle BoundingRectangle { get { return Rectangle.Empty; } }
 
         public Entity()
         {
+            Transform = new Transform();
+
             RendererServices = new RendererServiceContainer();
             RendererServices.Add<EntityRenderer>();
         }
