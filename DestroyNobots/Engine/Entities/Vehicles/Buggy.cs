@@ -1,6 +1,7 @@
 ﻿using DestroyNobots.Assembler.Emulator;
 using DestroyNobots.Assembler.Emulator.Peripherals;
 using Microsoft.Xna.Framework;
+using System.Diagnostics;
 
 namespace DestroyNobots.Engine.Entities.Vehicles
 {
@@ -8,21 +9,39 @@ namespace DestroyNobots.Engine.Entities.Vehicles
     {
         public override Rectangle BoundingRectangle { get { return new Rectangle(Transform.Position.ToPoint(), new Point(32, 32)); } }
 
+		public bool IsDirty { get; private set; }
+
         public Buggy()
         {
-            Transform.Position = new Vector2(200, 200);
-            Transform.Origin = new Vector2(16, 24);
+            Transform.Position = new Vector2(400, 400);
             Computer.ConnectPeripheral(this);
-        }
+
+			IsDirty = true;
+		}
 
         public override void Draw(GameTime gt)
         {
-            base.Draw(gt);
+			if(IsDirty) {
+				IsDirty = false;
 
-            Vector2 point = Vector2.Transform(new Vector2(0, 0), Transform.Matrix);
+				var texture = Game.TextureManager.BuggyTexture;
+				Transform.Origin = new Vector2(texture.Width, texture.Height) * 0.5f;
+			}
 
-            Game.SpriteBatch.Draw(Game.TextureManager.BuggyTexture, Transform.Position, null, Color.White, Transform.Rotation, Transform.Origin, Transform.Scale, Transform.Effect, Transform.Depth);
-        }
+			base.Draw(gt);
+			
+            Game.SpriteBatch.Draw(
+				Game.TextureManager.BuggyTexture, 
+				Transform.Position, 
+				null, 
+				Color.White, 
+				Transform.Rotation, 
+				Transform.Origin, 
+				Transform.Scale, 
+				Transform.Effect, 
+				Transform.Depth
+			);
+		}
 
         public void Install()
         {
