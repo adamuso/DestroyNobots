@@ -76,6 +76,7 @@ namespace DestroyNobots.Assembler.Emulator
 
         public void Reset()
         {
+            ProgramCounter.Set(0);
             abort = false;
         }
 

@@ -17,6 +17,8 @@ namespace DestroyNobots
         GraphicsDeviceManager graphics;
         Screen currentScreen;
 
+        public Texture2D BlankTexture { get; private set; }
+
         public TimerManager TimerManager { get; private set; }
         public SpriteBatch SpriteBatch { get; private set; }
         public EntityManager EntityManager { get; private set; }
@@ -24,6 +26,8 @@ namespace DestroyNobots
         public Camera Camera { get; private set; }
         public Level Level { get; private set; }
         public InputManager InputManager { get; private set; }
+
+        public SpriteFont EditorFont { get; private set; }
 
         public DestroyNobotsGame()
         {
@@ -50,7 +54,7 @@ namespace DestroyNobots
             }
         }
 
-        Buggy b;
+        public Buggy b;
 
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
@@ -98,10 +102,15 @@ namespace DestroyNobots
         /// </summary>
         protected override void LoadContent()
         {
+            BlankTexture = new Texture2D(GraphicsDevice, 1, 1);
+            BlankTexture.SetData(new Color[] { Color.White });
+
             TextureManager = new TextureManager(this);
 
             SpriteBatch = new SpriteBatch(GraphicsDevice);
             TextureManager.Load();
+
+            EditorFont = Content.Load<SpriteFont>("EditorFont");
 
             SwitchScreen<GameScreen>();
         }
@@ -121,6 +130,7 @@ namespace DestroyNobots
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            InputManager.Update(gameTime);
             b.Computer.Step();
             TimerManager.Update(gameTime);
             currentScreen.Update(gameTime);

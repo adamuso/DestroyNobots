@@ -22,7 +22,7 @@ namespace DestroyNobots.Screens
             Game.EntityManager.Draw(gt);
             Game.SpriteBatch.End();
 
-            Game.SpriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.Default);
+            Game.SpriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.AnisotropicClamp, null, new RasterizerState() { ScissorTestEnable = true });
             gui.Draw(gt);
             Game.SpriteBatch.End();
         }
