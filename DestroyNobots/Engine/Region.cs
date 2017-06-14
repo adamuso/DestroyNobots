@@ -27,18 +27,18 @@ namespace DestroyNobots.Engine
 
             foreach (Rectangle rectangle in rectangles)
             {
-                Rectangle transformed = Transform.Apply(rectangle);
+                Polygon transformed = Transform.Apply(rectangle);
 
-                bounds.X = transformed.X < bounds.X ? transformed.X : bounds.X;
-                bounds.Y = transformed.Y < bounds.Y ? transformed.Y : bounds.Y;
-                bounds.Width = transformed.Right > bounds.Right ? (transformed.Right - bounds.X) : bounds.Width;
-                bounds.Height = transformed.Bottom > bounds.Bottom ? (transformed.Bottom - bounds.Y) : bounds.Height;
+                bounds.X = transformed.Bounds.X < bounds.X ? transformed.Bounds.X : bounds.X;
+                bounds.Y = transformed.Bounds.Y < bounds.Y ? transformed.Bounds.Y : bounds.Y;
+                bounds.Width = transformed.Bounds.Right > bounds.Right ? (transformed.Bounds.Right - bounds.X) : bounds.Width;
+                bounds.Height = transformed.Bounds.Bottom > bounds.Bottom ? (transformed.Bounds.Bottom - bounds.Y) : bounds.Height;
             }
 
             return bounds;
         }
 
-        public bool Contains(Point point)
+        public bool Contains(Vector2 point)
         {
             foreach (Rectangle rectangle in rectangles)
             {
@@ -91,23 +91,29 @@ namespace DestroyNobots.Engine
             return true;
         }
 
-        public Rectangle? GetIntersectingRectangleWith(Rectangle rect)
+        public Vector2? GetIntersection(Polygon polygon)
         {
             foreach (Rectangle rectangle in rectangles)
             {
-                if (Transform.Apply(rectangle).Intersects(rect))
-                    return rectangle;
+                Vector2? intersection = Transform.Apply(rectangle).GetIntersection(polygon);
+
+                if (intersection != null)
+                    return intersection;
             }
 
             return null;
         }
 
-        public Tuple<Rectangle, Rectangle> GetIntersectingRectanglesWith(Region region)
+        public Vector2? GetIntersection(Region region)
         {
             foreach (Rectangle rectangle1 in rectangles)
                 foreach (Rectangle rectangle2 in region.rectangles)
-                    if (Transform.Apply(rectangle1).Intersects(Transform.Apply(rectangle2)))
-                        return new Tuple<Rectangle, Rectangle>(rectangle1, rectangle2);
+                {
+                    Vector2? intersection = Transform.Apply(rectangle1).GetIntersection(Transform.Apply(rectangle2));
+
+                    if (intersection != null)
+                        return intersection;
+                }
 
             return null;
         }

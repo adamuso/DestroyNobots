@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Linq;
 
 namespace DestroyNobots.Engine
 {
@@ -16,10 +17,6 @@ namespace DestroyNobots.Engine
                                             Matrix.CreateScale(Scale.X, Scale.Y, 1) *
                                             Matrix.CreateRotationZ(Rotation) * 
                                             Matrix.CreateTranslation(new Vector3(Position, 0)); } }
-
-        public Matrix NonRotationMatrix { get { return Matrix.CreateTranslation(new Vector3(-Origin, 0)) * 
-                                                       Matrix.CreateScale(Scale.X, Scale.Y, 1) *
-                                                       Matrix.CreateTranslation(new Vector3(Position, 0)); } }
 
         public Transform()
         {
@@ -41,14 +38,9 @@ namespace DestroyNobots.Engine
             return Vector2.Transform(point.ToVector2(), Matrix).ToPoint();
         }
 
-        public Rectangle Apply(Rectangle rectangle)
+        public Polygon Apply(Polygon polygon)
         {
-            Vector2 topLeft = rectangle.Location.ToVector2();
-            Vector2 bottomRight = (rectangle.Location + rectangle.Size).ToVector2();
-            topLeft = Vector2.Transform(topLeft, NonRotationMatrix);
-            bottomRight = Vector2.Transform(bottomRight, NonRotationMatrix);
-
-            return new Rectangle(topLeft.ToPoint(), (bottomRight - topLeft).ToPoint());
+            return new Polygon(polygon.Points.Select(p => Vector2.Transform(p, Matrix)).ToArray());
         }
     }
 }

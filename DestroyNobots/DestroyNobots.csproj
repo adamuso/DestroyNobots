@@ -47,10 +47,15 @@
     <Compile Include="Computers\InstructionSets.cs" />
     <Compile Include="Engine\Camera.cs" />
     <Compile Include="Engine\Entities\Collider.cs" />
-    <Compile Include="Engine\Collision\CollisionManager.cs" />
+    <Compile Include="Engine\Physics\TopDown2DPhysics.cs" />
+    <Compile Include="Engine\Physics\CollisionManager.cs" />
     <Compile Include="Engine\DetailedTile.cs" />
     <Compile Include="Engine\Entities\Buildings\Radar.cs" />
     <Compile Include="Engine\Entities\EntityRenderer.cs" />
+    <Compile Include="Engine\Physics\IPhysics.cs" />
+    <Compile Include="Engine\Entities\StaticCollider.cs" />
+    <Compile Include="Engine\Polygon.cs" />
+    <Compile Include="Engine\Projection.cs" />
     <Compile Include="Engine\Region.cs" />
     <Compile Include="Engine\Transform.cs" />
     <Compile Include="Engine\Input\IInputElementContainer.cs" />
@@ -73,6 +78,7 @@
     <Compile Include="Engine\TextureManager.cs" />
     <Compile Include="Engine\Tile.cs" />
     <Compile Include="Engine\TileSet.cs" />
+    <Compile Include="Engine\Vector2Extensions.cs" />
     <Compile Include="IRenderable.cs" />
     <Compile Include="IUpdateable.cs" />
     <Compile Include="Program.cs" />

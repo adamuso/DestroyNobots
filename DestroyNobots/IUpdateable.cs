@@ -2,7 +2,7 @@
 
 namespace DestroyNobots
 {
-    interface IUpdateable
+    public interface IUpdateable
     {
         void Update(GameTime gt);
     }

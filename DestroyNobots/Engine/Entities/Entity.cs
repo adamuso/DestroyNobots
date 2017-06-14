@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using DestroyNobots.Engine.Physics;
+using Microsoft.Xna.Framework;
 
 namespace DestroyNobots.Engine.Entities
 {
@@ -9,6 +10,10 @@ namespace DestroyNobots.Engine.Entities
         public RendererServiceContainer RendererServices { get; private set; }
         public Transform Transform { get; set; }
         public virtual Rectangle BoundingRectangle { get { return Rectangle.Empty; } }
+        public IPhysics Physics { get; protected set; }
+
+        public Vector2 Front { get; protected set; }
+        public Vector2 Forward { get { return Vector2.Transform(Front, Matrix.CreateRotationZ(Transform.Rotation)); } }
 
         public Entity()
         {
