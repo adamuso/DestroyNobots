@@ -4,6 +4,7 @@ using DestroyNobots.Engine.Entities;
 using DestroyNobots.Engine.Entities.Vehicles;
 using DestroyNobots.Engine.Input;
 using DestroyNobots.Screens;
+using FarseerPhysics.Dynamics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -28,6 +29,8 @@ namespace DestroyNobots
         public Level Level { get; private set; }
         public InputManager InputManager { get; private set; }
         public CollisionManager CollisionManager { get; private set; }
+
+        public World World { get; private set; }
 
         public SpriteFont EditorFont { get; private set; }
 
@@ -75,6 +78,7 @@ namespace DestroyNobots
             IsFixedTimeStep = false;
             IsMouseVisible = true;
 
+            World = new World(Vector2.Zero);
             InputManager = new InputManager();
             TimerManager = new TimerManager();
             EntityManager = new EntityManager() { Game = this };
@@ -136,6 +140,8 @@ namespace DestroyNobots
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+
+            World.Step(0.033333f);
 
             InputManager.Update(gameTime);
             b.Computer.Step();

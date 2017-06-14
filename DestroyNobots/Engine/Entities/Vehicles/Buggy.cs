@@ -1,5 +1,8 @@
 ﻿using DestroyNobots.Assembler.Emulator;
 using DestroyNobots.Assembler.Emulator.Peripherals;
+using FarseerPhysics.Collision.Shapes;
+using FarseerPhysics.Dynamics;
+using FarseerPhysics.Factories;
 using Microsoft.Xna.Framework;
 using System.Diagnostics;
 
@@ -27,6 +30,13 @@ namespace DestroyNobots.Engine.Entities.Vehicles
 
             Transform.Origin = new Vector2(Game.TextureManager.BuggyTexture.Width, Game.TextureManager.BuggyTexture.Height) * 0.5f;
             Physics.CenterOfMass = new Vector2(Game.TextureManager.BuggyTexture.Width, Game.TextureManager.BuggyTexture.Height) * 0.5f;
+
+            body = BodyFactory.CreateBody(Game.World);
+            body.Position = new Vector2(400, 400);
+            body.BodyType = BodyType.Dynamic;
+
+            PolygonShape s = new PolygonShape(new FarseerPhysics.Common.Vertices(((Polygon)new Rectangle(0, 0, Game.TextureManager.BuggyTexture.Width, Game.TextureManager.BuggyTexture.Height)).Points), 1);
+            body.CreateFixture(s);
         }
 
         public override void Draw(GameTime gt)
@@ -67,7 +77,12 @@ namespace DestroyNobots.Engine.Entities.Vehicles
         {
             base.Update(gt);
 
-            Physics.AddForce(new Vector2(Game.TextureManager.BuggyTexture.Width * 0.5f, Game.TextureManager.BuggyTexture.Height), leftWheelsForce * Forward);
+            Transform.Position = body.Position;
+            Transform.Rotation = body.Rotation;
+
+            body.ApplyForce(leftWheelsForce * new Vector2(1, 0) * 1000000, body.Position + new Vector2(Game.TextureManager.BuggyTexture.Width, Game.TextureManager.BuggyTexture.Height) * 0.5f);
+            
+            //Physics.AddForce(new Vector2(Game.TextureManager.BuggyTexture.Width * 0.5f, Game.TextureManager.BuggyTexture.Height), leftWheelsForce * Forward);
             //Physics.AddForce(new Vector2(1, 0), rightWheelsForce * Forward);
 
         }

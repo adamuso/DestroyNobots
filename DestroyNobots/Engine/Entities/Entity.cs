@@ -1,4 +1,7 @@
 ﻿using DestroyNobots.Engine.Physics;
+using FarseerPhysics.Collision.Shapes;
+using FarseerPhysics.Dynamics;
+using FarseerPhysics.Factories;
 using Microsoft.Xna.Framework;
 
 namespace DestroyNobots.Engine.Entities
@@ -14,6 +17,8 @@ namespace DestroyNobots.Engine.Entities
 
         public Vector2 Front { get; protected set; }
         public Vector2 Forward { get { return Vector2.Transform(Front, Matrix.CreateRotationZ(Transform.Rotation)); } }
+
+        protected Body body;
 
         public Entity()
         {

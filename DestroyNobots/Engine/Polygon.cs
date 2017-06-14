@@ -23,7 +23,6 @@ namespace DestroyNobots.Engine
             }
         }
 
-        private Vector2[] points;
         private Vector2 min;
         private Vector2 max;
 
@@ -32,7 +31,7 @@ namespace DestroyNobots.Engine
 
         public Polygon(Vector2[] points)
         {
-            this.points = points;
+            this.Points = points;
 
             min = new Vector2(points.Select(p => p.X).Min(), points.Select(p => p.Y).Min());
             max = new Vector2(points.Select(p => p.X).Max(), points.Select(p => p.Y).Max());
@@ -46,8 +45,8 @@ namespace DestroyNobots.Engine
 
             for(int i = 0; i < axes.Count; i++)
             {
-                Projection projection1 = Projection.Project(points, axes[i]);
-                Projection projection2 = Projection.Project(polygon.points, axes[i]);
+                Projection projection1 = Projection.Project(Points, axes[i]);
+                Projection projection2 = Projection.Project(polygon.Points, axes[i]);
 
                 float? overlap = projection1.GetOverlap(projection2);
 
@@ -67,8 +66,8 @@ namespace DestroyNobots.Engine
             // find the MTV
             Vector2 mtv1 = normal * (smallestOverlap + 1);
             Vector2 mtv2 = normal * -(smallestOverlap + 1);
-            Projection project1 = Projection.Project(points, mtv1, normal);
-            Projection project2 = Projection.Project(points, mtv2, normal);
+            Projection project1 = Projection.Project(Points, mtv1, normal);
+            Projection project2 = Projection.Project(Points, mtv2, normal);
 
             float? overlap2 = project1.GetOverlap(project2);
 
@@ -84,8 +83,8 @@ namespace DestroyNobots.Engine
 
             for (int i = 0; i < axes.Count; i++)
             {
-                Projection projection1 = Projection.Project(points, axes[i]);
-                Projection projection2 = Projection.Project(polygon.points, axes[i]);
+                Projection projection1 = Projection.Project(Points, axes[i]);
+                Projection projection2 = Projection.Project(polygon.Points, axes[i]);
 
                 float? overlap = projection1.GetOverlap(projection2);
 
@@ -102,7 +101,7 @@ namespace DestroyNobots.Engine
 
             for (int i = 0; i < axes.Count; i++)
             {
-                Projection projection1 = Projection.Project(points, axes[i]);
+                Projection projection1 = Projection.Project(Points, axes[i]);
                 Projection projection2 = Projection.Project(new Vector2[] { point }, axes[i]);
 
                 if (!projection1.Contains(projection2))
@@ -118,8 +117,8 @@ namespace DestroyNobots.Engine
 
             for (int i = 0; i < axes.Count; i++)
             {
-                Projection projection1 = Projection.Project(points, axes[i]);
-                Projection projection2 = Projection.Project(polygon.points, axes[i]);
+                Projection projection1 = Projection.Project(Points, axes[i]);
+                Projection projection2 = Projection.Project(polygon.Points, axes[i]);
 
                 float? overlap = projection1.GetOverlap(projection2);
 
@@ -135,10 +134,10 @@ namespace DestroyNobots.Engine
 
         public Vector2[] GetEdges()
         {
-            Vector2[] edges = new Vector2[points.Length];
+            Vector2[] edges = new Vector2[Points.Length];
 
-            for (int i = 0; i < points.Length; i++)
-                edges[i] = points[(i + 1) % points.Length] - points[i];
+            for (int i = 0; i < Points.Length; i++)
+                edges[i] = Points[(i + 1) % Points.Length] - Points[i];
 
             return edges;
         }
