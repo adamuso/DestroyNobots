@@ -3,7 +3,7 @@ using DestroyNobots.Computers;
 
 namespace DestroyNobots.Engine.Entities
 {
-    public class Robot : Collider
+    public class Robot : Entity
     {
         public Computer Computer { get; private set; }
 
