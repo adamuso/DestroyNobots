@@ -26,13 +26,13 @@ namespace DestroyNobots.Engine.Entities.Vehicles
         {
             base.Initialize();
 
-            Transform.Origin = new Vector2(Game.TextureManager.BuggyTexture.Width, Game.TextureManager.BuggyTexture.Height) * 0.5f;
+            //Transform.Origin = new Vector2(Game.TextureManager.BuggyTexture.Width, Game.TextureManager.BuggyTexture.Height) * 0.5f;
 
             Body = BodyFactory.CreateBody(Game.World, ConvertUnits.ToSimUnits(new Vector2(400, 400)));
             Body.BodyType = BodyType.Dynamic;
             Body.Mass = 20000;
-            Body.AngularDamping = 0.1f;
-            Body.LinearDamping = 0.0f;
+            Body.AngularDamping = 8f;
+            Body.LinearDamping = 1f;
 
             PolygonShape s = new PolygonShape(new FarseerPhysics.Common.Vertices(((Polygon)new Rectangle(0, 0, Game.TextureManager.BuggyTexture.Width, Game.TextureManager.BuggyTexture.Height)).Points.Select(p => ConvertUnits.ToSimUnits(p))), 1);
             Body.CreateFixture(s);
@@ -53,6 +53,17 @@ namespace DestroyNobots.Engine.Entities.Vehicles
 				Transform.Effect, 
 				Transform.Depth
 			);
+
+            Game.SpriteBatch.Draw(Game.BlankTexture, new Rectangle(
+                                    (ConvertUnits.ToDisplayUnits(
+                                        Body.WorldCenter + Body.GetWorldVector(ConvertUnits.ToSimUnits(
+                                            new Vector2(
+                                                -Game.TextureManager.BuggyTexture.Width * 0.0f,
+                                                -Game.TextureManager.BuggyTexture.Height * 0.5f
+                                                ) - Transform.Origin
+                                            )
+                                        ) 
+                                    )).ToPoint() - new Point(5, 5), new Point(10, 10)), null, Color.Red, 0f, Vector2.Zero, Transform.Effect, 0f);
 		}
 
         public void Install()
@@ -61,8 +72,8 @@ namespace DestroyNobots.Engine.Entities.Vehicles
             {
                 Out = (value, size) =>
                 {
-                    leftWheelsForce = value;
-                    rightWheelsForce = value * 0.0f;
+                    leftWheelsForce = value * 1.0f;
+                    rightWheelsForce = value * -1.0f;
                 }
             };
         }
@@ -104,8 +115,27 @@ namespace DestroyNobots.Engine.Entities.Vehicles
             //    Body.ApplyForce(dragForceMagnitude * currentForwardNormal, Body.WorldCenter);
             //}
 
-            Body.ApplyForce(leftWheelsForce * currentForwardNormal, Body.WorldCenter + ConvertUnits.ToSimUnits(new Vector2(0, Game.TextureManager.BuggyTexture.Height * 0.5f)));
-            //Body.ApplyForce(-leftWheelsForce * currentForwardNormal, Body.WorldCenter + ConvertUnits.ToSimUnits(new Vector2(0, -Game.TextureManager.BuggyTexture.Height * 0.5f)));
+            Body.ApplyForce(leftWheelsForce * currentForwardNormal, 
+                            Body.WorldCenter + Body.GetWorldVector(
+                                ConvertUnits.ToSimUnits(
+                                    new Vector2(
+                                        -Game.TextureManager.BuggyTexture.Width * 0.0f, 
+                                        -Game.TextureManager.BuggyTexture.Height * 0.5f
+                                        )
+                                    )
+                                )
+                            );
+
+            Body.ApplyForce(rightWheelsForce * currentForwardNormal,
+                            Body.WorldCenter + Body.GetWorldVector(
+                                ConvertUnits.ToSimUnits(
+                                    new Vector2(
+                                        -Game.TextureManager.BuggyTexture.Width * 0.0f,
+                                        Game.TextureManager.BuggyTexture.Height * 0.5f
+                                        )
+                                    )
+                                )
+                            );
 
             //UpdateFriction();
         }
