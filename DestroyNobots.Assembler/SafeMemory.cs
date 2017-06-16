@@ -18,13 +18,13 @@ namespace DestroyNobots.Assembler
             memory = new MemoryStream(internalMemory, true);
         }
 
-        public byte Read(Pointer address)
+        public byte Read(Address address)
         {
             memory.Seek(address, SeekOrigin.Begin);
             return (byte)memory.ReadByte();
         }
 
-        public byte[] Read(Pointer address, uint len)
+        public byte[] Read(Address address, uint len)
         {
             byte[] ret = new byte[len];
 
@@ -34,7 +34,7 @@ namespace DestroyNobots.Assembler
             return ret;
         }
 
-        public T Read<T>(Pointer address) where T : struct
+        public T Read<T>(Address address) where T : struct
         {
             int size = Marshal.SizeOf(typeof(T));
             byte[] structure = Read(address, (uint)size);
@@ -47,13 +47,13 @@ namespace DestroyNobots.Assembler
             return ret;
         }
 
-        public void Write(Pointer address, byte value)
+        public void Write(Address address, byte value)
         {
             memory.Seek(address, SeekOrigin.Begin);
             memory.WriteByte(value);
         }
 
-        public void Write<T>(Pointer address, T value) where T : struct
+        public void Write<T>(Address address, T value) where T : struct
         {
             int size = Marshal.SizeOf(typeof(T));
             byte[] structure = new byte[size];
@@ -66,13 +66,13 @@ namespace DestroyNobots.Assembler
             Write(address, structure);
         }
 
-        public void Write(Pointer address, byte[] values)
+        public void Write(Address address, byte[] values)
         {
             memory.Seek(address, SeekOrigin.Begin);
             memory.Write(values, 0, values.Length);
         }
 
-        public void Write(Pointer address, byte value, uint count)
+        public void Write(Address address, byte value, uint count)
         {
             memory.Seek(address, SeekOrigin.Begin);
 

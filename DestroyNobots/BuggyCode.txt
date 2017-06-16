@@ -5,6 +5,10 @@ mov [r1], int1, dword
 mov r1, lidt_ptrs
 lidt r1
 
+mov r1, 1
+mov r2, 0
+div r1, r2
+
 start:
 	mov r3, 1
 	out 0x0, r3

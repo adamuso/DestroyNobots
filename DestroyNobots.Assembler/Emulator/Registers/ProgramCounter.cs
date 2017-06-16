@@ -31,12 +31,12 @@ namespace DestroyNobots.Assembler.Emulator.Registers
             register.Value = (T)Convert.ChangeType(register.Value.ToUInt32(null) + address, typeof(T));
         }
 
-        public void Jump(Pointer address)
+        public void Jump(Address address)
         {
             register.Value = (T)Convert.ChangeType(address.Value, typeof(T));
         }
 
-        public void Call(Pointer address)
+        public void Call(Address address)
         {
             processor.StackPointer.Push(register.Value);
             register.Value = (T)Convert.ChangeType(address.Value, typeof(T));
@@ -46,7 +46,7 @@ namespace DestroyNobots.Assembler.Emulator.Registers
         {
             if (processor.InterruptDescriptorTablePointer != null)
             {
-                Call(processor.Computer.Memory.Read<int>((uint)(processor.InterruptDescriptorTablePointer.Value.Value + interrupt * 4)));
+                Call(processor.InterruptDescriptorTablePointer.GetValue(interrupt * 4));
             }
         }
 

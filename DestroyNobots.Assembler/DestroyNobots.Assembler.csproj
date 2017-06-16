@@ -46,15 +46,18 @@
   <ItemGroup>
     <Compile Include="AssemblerCompiler.cs" />
     <Compile Include="AssemblerInstruction.cs" />
+    <Compile Include="AssemblerParameterValue.cs" />
     <Compile Include="BinaryMultiplier.cs" />
     <Compile Include="Emulator\Computer.cs" />
     <Compile Include="Emulator\InterruptSignal.cs" />
     <Compile Include="Emulator\IProcessorBase.cs" />
     <Compile Include="Emulator\Peripherals\PeripheralPortHandler.cs" />
     <Compile Include="Emulator\RAMMemory.cs" />
+    <Compile Include="Emulator\Registers\IRegister.cs" />
     <Compile Include="Emulator\Registers\Register.cs" />
     <Compile Include="Emulator\Registers\StackPointer.cs" />
     <Compile Include="FlagType.cs" />
+    <Compile Include="IAssemblerInstructionParameter.cs" />
     <Compile Include="IInstructionSetProvider.cs" />
     <Compile Include="IMemory.cs" />
     <Compile Include="Emulator\Peripherals\HardDrive.cs" />
@@ -62,14 +65,16 @@
     <Compile Include="Emulator\Peripherals\Peripheral.cs" />
     <Compile Include="Emulator\Processor.cs" />
     <Compile Include="Emulator\Registers\ProgramCounter.cs" />
+    <Compile Include="IPointer.cs" />
     <Compile Include="IRuntimeContext.cs" />
+    <Compile Include="Pointer.cs" />
     <Compile Include="ProgramMemoryReader.cs" />
     <Compile Include="SafeMemory.cs" />
     <Compile Include="UnsafeHGlobalMemory.cs" />
     <Compile Include="AssemblerOpcodeSet.cs" />
     <Compile Include="AssemblerParameters.cs" />
     <Compile Include="Parser\MathParser.cs" />
-    <Compile Include="Pointer.cs" />
+    <Compile Include="Address.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

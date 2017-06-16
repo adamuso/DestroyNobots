@@ -2,8 +2,10 @@
 
 namespace DestroyNobots.Assembler.Emulator.Registers
 {
-    public class Register<T> where T : IConvertible
+    public class Register<T> : IRegister where T : IConvertible
     {
+        IConvertible IRegister.Value { get { return Value; } }
+
         public T Value { get; set; }
 
         public byte Size { get { return (byte)System.Runtime.InteropServices.Marshal.SizeOf(typeof(T)); } }

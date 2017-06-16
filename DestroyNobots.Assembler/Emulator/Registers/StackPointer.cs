@@ -26,7 +26,7 @@ namespace DestroyNobots.Assembler.Emulator.Registers
 
         public void Push(T value)
         {
-            processor.Computer.Memory.Write(register.Value.ToUInt32(null), value);
+            processor.Context.Memory.Write(register.Value.ToUInt32(null), value);
             register.Increment();
 
             if (register.Value.ToUInt32(null) > stackMemoryStart + stackSize * 4)
@@ -46,7 +46,7 @@ namespace DestroyNobots.Assembler.Emulator.Registers
                 throw new Exception("Stack underflow!");
             }
 
-            return processor.Computer.Memory.Read<T>(register.Value.ToUInt32(null));
+            return processor.Context.Memory.Read<T>(register.Value.ToUInt32(null));
         }
     }
 }

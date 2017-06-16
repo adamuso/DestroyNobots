@@ -21,21 +21,22 @@ namespace DestroyNobots.Assembler.Emulator
 
         public Dictionary<byte, AssemblerInstruction> InstructionSet { get; private set; } // opcodes as keys
 
-        public Pointer? InterruptDescriptorTablePointer { get; set; }
+        public Pointer<Address> InterruptDescriptorTablePointer { get; set; }
 
+        IRegister[] IProcessorBase.Registers { get { return Registers; } }
         public Register<T>[] Registers { get; private set; }
         public ProgramCounter<T> ProgramCounter { get; private set; }
         public StackPointer<T> StackPointer { get; private set; }
 
         public bool Running { get; private set; }
 
-        public Computer Computer { get; set; }
+        public IRuntimeContext Context { get; set; }
 
         public Processor(Dictionary<byte, AssemblerInstruction> instructions)
         {
-            this.Computer = null;
+            this.Context = null;
             Registers = new Register<T>[RegistersCount];
-            InstructionSet = instructions; 
+            InstructionSet = instructions;
 
             flags = 0;
             abort = false;
@@ -45,6 +46,11 @@ namespace DestroyNobots.Assembler.Emulator
 
             StackPointer = new StackPointer<T>(this, Registers[StackPointerRegisterNumber], 0, 0);
             ProgramCounter = new ProgramCounter<T>(this, Registers[ProgramCountRegisterNumber]);
+        }
+
+        public void Initialize()
+        {
+            InterruptDescriptorTablePointer = new Pointer<Address>(Context.Memory, Address.Null);
         }
 
         public void Run()
@@ -133,7 +139,7 @@ namespace DestroyNobots.Assembler.Emulator
         private void RunProgram(bool step = false)
         {
             if(programMemoryReader == null)
-                programMemoryReader = new Assembler.ProgramMemoryReader<T>(this, Computer.Memory);
+                programMemoryReader = new Assembler.ProgramMemoryReader<T>(this, Context.Memory);
 
             int instruction = -1;
 
@@ -145,7 +151,7 @@ namespace DestroyNobots.Assembler.Emulator
                     break;
                 }
 
-                instruction = Computer.Memory.Read<int>(ProgramCounter.Address);
+                instruction = Context.Memory.Read<int>(ProgramCounter.Address);
 
                 if (instruction == 0 || instruction == -1)
                 {
@@ -176,7 +182,7 @@ namespace DestroyNobots.Assembler.Emulator
 
                 try
                 {
-                    asm.Eval(Computer, param);
+                    asm.Eval(Context, param);
                 }
                 catch(InterruptSignal interrupt)
                 {
