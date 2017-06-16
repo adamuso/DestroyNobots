@@ -19,11 +19,11 @@ namespace DestroyNobots.UI
 
         public void Update(GameTime gt)
         {
-            if (!Game.InputManager.UseEvents)
-            {
-                Game.InputManager.UseEvents = true;
-                AssemblerEditor.Show();
-            }
+            //if (!Game.InputManager.UseEvents)
+            //{
+            //    Game.InputManager.UseEvents = true;
+            //    AssemblerEditor.Show();
+            //}
 
             EntitySelectionManager.Update(gt);
         }

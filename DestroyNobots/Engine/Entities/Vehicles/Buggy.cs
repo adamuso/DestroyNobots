@@ -26,15 +26,15 @@ namespace DestroyNobots.Engine.Entities.Vehicles
         {
             base.Initialize();
 
-            //Transform.Origin = new Vector2(Game.TextureManager.BuggyTexture.Width, Game.TextureManager.BuggyTexture.Height) * 0.5f;
+            Transform.Origin = new Vector2(Game.TextureManager.BuggyTexture.Width, Game.TextureManager.BuggyTexture.Height) * 0.5f;
 
-            Body = BodyFactory.CreateBody(Game.World, ConvertUnits.ToSimUnits(new Vector2(400, 400)));
+            Body = BodyFactory.CreateBody(Game.World, ConvertUnits.ToSimUnits(new Vector2(0, 0)));
             Body.BodyType = BodyType.Dynamic;
             Body.Mass = 20000;
             Body.AngularDamping = 8f;
             Body.LinearDamping = 1f;
 
-            PolygonShape s = new PolygonShape(new FarseerPhysics.Common.Vertices(((Polygon)new Rectangle(0, 0, Game.TextureManager.BuggyTexture.Width, Game.TextureManager.BuggyTexture.Height)).Points.Select(p => ConvertUnits.ToSimUnits(p))), 1);
+            PolygonShape s = new PolygonShape(new FarseerPhysics.Common.Vertices(((Polygon)new Rectangle(-Game.TextureManager.BuggyTexture.Width / 2, -Game.TextureManager.BuggyTexture.Height / 2, Game.TextureManager.BuggyTexture.Width, Game.TextureManager.BuggyTexture.Height)).Points.Select(p => ConvertUnits.ToSimUnits(p))), 1);
             Body.CreateFixture(s);
         }
 
@@ -49,22 +49,31 @@ namespace DestroyNobots.Engine.Entities.Vehicles
 				Color.White, 
 				Transform.Rotation, 
 				Transform.Origin, 
-				Transform.Scale,
+                Transform.Scale,
 				Transform.Effect, 
 				Transform.Depth
 			);
 
-            Game.SpriteBatch.Draw(Game.BlankTexture, new Rectangle(
-                                    (ConvertUnits.ToDisplayUnits(
-                                        Body.WorldCenter + Body.GetWorldVector(ConvertUnits.ToSimUnits(
-                                            new Vector2(
-                                                -Game.TextureManager.BuggyTexture.Width * 0.0f,
-                                                -Game.TextureManager.BuggyTexture.Height * 0.5f
-                                                ) - Transform.Origin
-                                            )
-                                        ) 
-                                    )).ToPoint() - new Point(5, 5), new Point(10, 10)), null, Color.Red, 0f, Vector2.Zero, Transform.Effect, 0f);
-		}
+            Game.SpriteBatch.Draw(
+                Game.BlankTexture, 
+                new Rectangle(ConvertUnits.ToDisplayUnits(GetLeftTrackForcePoint()).ToPoint() - new Point(5, 5), new Point(10, 10)), 
+                null, 
+                Color.Red, 
+                0f,
+                Vector2.Zero, 
+                Transform.Effect, 
+                0f);
+
+            Game.SpriteBatch.Draw(
+                Game.BlankTexture, 
+                new Rectangle(ConvertUnits.ToDisplayUnits(GetRightTrackForcePoint()).ToPoint() - new Point(5, 5), new Point(10, 10)),
+                null,
+                Color.Blue,
+                0f,
+                Vector2.Zero,
+                Transform.Effect,
+                0f);
+        }
 
         public void Install()
         {
@@ -72,8 +81,15 @@ namespace DestroyNobots.Engine.Entities.Vehicles
             {
                 Out = (value, size) =>
                 {
-                    leftWheelsForce = value * 1.0f;
-                    rightWheelsForce = value * -1.0f;
+                    leftWheelsForce = value;
+                }
+            };
+
+            Computer.Ports[1] = new PeripheralPortHandler(this)
+            {
+                Out = (value, size) =>
+                {
+                    rightWheelsForce = value;
                 }
             };
         }
@@ -81,20 +97,6 @@ namespace DestroyNobots.Engine.Entities.Vehicles
         public void Uninstall()
         {
             Computer.Ports.Remove(0);
-        }
-
-        private Vector2 GetLateralVelocity()
-        {
-            Vector2 currentRightNormal = Body.GetWorldVector(new Vector2(0, 1));
-            return Vector2.Dot(currentRightNormal, Body.LinearVelocity) * currentRightNormal;
-
-        }
-
-        private void UpdateFriction()
-        {
-            Vector2 impulse = Body.Mass * -GetLateralVelocity();
-            Body.ApplyLinearImpulse(impulse, Body.WorldCenter);
-            Body.ApplyAngularImpulse(0.005f * Body.Inertia * -Body.AngularVelocity);
         }
 
         public override void Update(GameTime gt)
@@ -106,38 +108,18 @@ namespace DestroyNobots.Engine.Entities.Vehicles
 
             Vector2 currentForwardNormal = Body.GetWorldVector(new Vector2(1, 0));
 
-            //if (currentForwardNormal.LengthSquared() > 0)
-            //{
-            //    currentForwardNormal.Normalize();
+            Body.ApplyForce(leftWheelsForce * currentForwardNormal, GetLeftTrackForcePoint());
+            Body.ApplyForce(rightWheelsForce * currentForwardNormal, GetRightTrackForcePoint());
+        }
 
-            //    float currentForwardSpeed = currentForwardNormal.Length();
-            //    float dragForceMagnitude = -1 * currentForwardSpeed;
-            //    Body.ApplyForce(dragForceMagnitude * currentForwardNormal, Body.WorldCenter);
-            //}
+        private Vector2 GetLeftTrackForcePoint()
+        {
+            return Body.WorldCenter + Body.GetWorldVector(ConvertUnits.ToSimUnits(new Vector2(-Game.TextureManager.BuggyTexture.Width * 0.0f, -Game.TextureManager.BuggyTexture.Height * 0.5f)));
+        }
 
-            Body.ApplyForce(leftWheelsForce * currentForwardNormal, 
-                            Body.WorldCenter + Body.GetWorldVector(
-                                ConvertUnits.ToSimUnits(
-                                    new Vector2(
-                                        -Game.TextureManager.BuggyTexture.Width * 0.0f, 
-                                        -Game.TextureManager.BuggyTexture.Height * 0.5f
-                                        )
-                                    )
-                                )
-                            );
-
-            Body.ApplyForce(rightWheelsForce * currentForwardNormal,
-                            Body.WorldCenter + Body.GetWorldVector(
-                                ConvertUnits.ToSimUnits(
-                                    new Vector2(
-                                        -Game.TextureManager.BuggyTexture.Width * 0.0f,
-                                        Game.TextureManager.BuggyTexture.Height * 0.5f
-                                        )
-                                    )
-                                )
-                            );
-
-            //UpdateFriction();
+        private Vector2 GetRightTrackForcePoint()
+        {
+            return Body.WorldCenter + Body.GetWorldVector(ConvertUnits.ToSimUnits(new Vector2(-Game.TextureManager.BuggyTexture.Width * 0.0f, Game.TextureManager.BuggyTexture.Height * 0.5f)));
         }
     }
 }

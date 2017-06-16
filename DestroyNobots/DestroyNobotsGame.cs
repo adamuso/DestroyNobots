@@ -140,7 +140,7 @@ namespace DestroyNobots
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            World.Step(0.033333f);
+            World.Step(1 / 60.0f);
 
             InputManager.Update(gameTime);
             b.Computer.Step();
