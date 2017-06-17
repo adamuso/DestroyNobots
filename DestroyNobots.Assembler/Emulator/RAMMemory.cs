@@ -56,6 +56,14 @@ namespace DestroyNobots.Assembler.Emulator
             return internalMemory.Read<T1>(address);
         }
 
+        public T1 Read<T1>(Address address, out uint size) where T1 : struct
+        {
+            if (address.Value >= MemorySize)
+                computer.Processor.Interrupt(1);
+
+            return internalMemory.Read<T1>(address, out size);
+        }
+
         public void Write(Address address, byte[] values)
         {
             if (address.Value >= MemorySize)
@@ -80,12 +88,12 @@ namespace DestroyNobots.Assembler.Emulator
             internalMemory.Write(address, value, count);
         }
 
-        public void Write<T1>(Address address, T1 value) where T1 : struct
+        public uint Write<T1>(Address address, T1 value) where T1 : struct
         {
             if (address.Value >= MemorySize)
                 computer.Processor.Interrupt(1);
 
-            internalMemory.Write(address, value);
+            return internalMemory.Write(address, value);
         }
     }
 }

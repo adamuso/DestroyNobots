@@ -37,14 +37,24 @@ namespace DestroyNobots.Assembler
             return ret;
         }
 
+        public T Read<T>(Address address, out uint size) where T : struct
+        {
+            T ret = new T();
+            ret = (T)Marshal.PtrToStructure(new IntPtr(memory.ToInt64() + address), typeof(T));
+            size = (uint)Marshal.SizeOf(typeof(T));
+            return ret;
+        }
+
         public void Write(Address address, byte value)
         {
             Marshal.WriteByte(new IntPtr(memory.ToInt64() + address), value);
         }
 
-        public void Write<T>(Address address, T value) where T : struct
+        public uint Write<T>(Address address, T value) where T : struct
         {
             Marshal.StructureToPtr(value, new IntPtr(memory.ToInt64() + address), true);
+
+            return (uint)Marshal.SizeOf(typeof(T));
         }
 
         public void Write(Address address, byte[] values)

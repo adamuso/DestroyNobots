@@ -7,7 +7,8 @@ namespace DestroyNobots.Assembler.Emulator
         bool Running { get; }
         IRuntimeContext Context { get; set; }
         IRegister[] Registers { get; }
-
+        IStackPointer StackPointer { get; }
+        Pointer<Address> InterruptDescriptorTablePointer { get; }
 
         void Initialize();
         void Run();

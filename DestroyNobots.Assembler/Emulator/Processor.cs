@@ -25,9 +25,10 @@ namespace DestroyNobots.Assembler.Emulator
 
         IRegister[] IProcessorBase.Registers { get { return Registers; } }
         public Register<T>[] Registers { get; private set; }
-        public ProgramCounter<T> ProgramCounter { get; private set; }
-        public StackPointer<T> StackPointer { get; private set; }
-
+        public ProgramCounter<uint> ProgramCounter { get; private set; }
+        IStackPointer IProcessorBase.StackPointer { get { return StackPointer; } }
+        public StackPointer StackPointer { get; private set; }
+        
         public bool Running { get; private set; }
 
         public IRuntimeContext Context { get; set; }
@@ -48,8 +49,8 @@ namespace DestroyNobots.Assembler.Emulator
             for (int r = 0; r < RegistersCount; r++)
                 Registers[r] = new Register<T>();
 
-            StackPointer = new StackPointer<T>(this, Registers[StackPointerRegisterNumber], 0, 0);
-            ProgramCounter = new ProgramCounter<T>(this, Registers[ProgramCountRegisterNumber]);
+            StackPointer = new StackPointer(this, new Register<uint>(), 0, 0);
+            ProgramCounter = new ProgramCounter<uint>(this, new Register<uint>());
         }
 
         public void Initialize()

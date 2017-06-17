@@ -7,7 +7,7 @@ namespace DestroyNobots.Assembler
     {
         IInstructionSetProvider instructionSetProvider;
         HashSet<byte> opcodes;
-        byte _default;
+        byte @default;
 
         public AssemblerOpcodeSet(IInstructionSetProvider instructionSetProvider)
         {
@@ -66,6 +66,6 @@ namespace DestroyNobots.Assembler
 
         public int Count { get { return opcodes.Count; } }
         public IList<byte> Opcodes { get { return opcodes.ToList(); } }
-        public byte Default { get { return _default; } set { _default = value; } }
+        public byte Default { get { return @default; } set { @default = value; } }
     }
 }

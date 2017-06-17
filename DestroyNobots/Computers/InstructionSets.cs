@@ -301,7 +301,7 @@ namespace DestroyNobots.Computers
             { 0x1A, new AssemblerInstruction("pop", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
-                    processor.Registers[parameters[0]].Value = processor.StackPointer.Pop();
+                    processor.Registers[parameters[0]].Value = processor.StackPointer.Pop<int>();
                 }
             )},
             #endregion
@@ -393,15 +393,14 @@ namespace DestroyNobots.Computers
             { 0x24, new AssemblerInstruction("call", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    processor.StackPointer.Push(processor.Registers[31].Value);
-                    processor.Registers[31].Value += parameters[0];
+                    processor.ProgramCounter.Call(processor.ProgramCounter.Address + parameters[0]);
                 }
             )},
 
             { 0x25, new AssemblerInstruction("ret", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    processor.Registers[31].Value = processor.StackPointer.Pop();
+                    processor.ProgramCounter.Return();
                 }
             )},
 

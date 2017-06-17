@@ -47,13 +47,27 @@ namespace DestroyNobots.Assembler
             return ret;
         }
 
+        public T Read<T>(Address address, out uint size) where T : struct
+        {
+            size = (uint)Marshal.SizeOf(typeof(T));
+            byte[] structure = Read(address, size);
+
+            IntPtr mem = Marshal.AllocHGlobal((int)size);
+            Marshal.Copy(structure, 0, mem, (int)size);
+            T ret = (T)Marshal.PtrToStructure(mem, typeof(T));
+            Marshal.FreeHGlobal(mem);
+
+            return ret;
+        }
+
+
         public void Write(Address address, byte value)
         {
             memory.Seek(address, SeekOrigin.Begin);
             memory.WriteByte(value);
         }
 
-        public void Write<T>(Address address, T value) where T : struct
+        public uint Write<T>(Address address, T value) where T : struct
         {
             int size = Marshal.SizeOf(typeof(T));
             byte[] structure = new byte[size];
@@ -64,6 +78,8 @@ namespace DestroyNobots.Assembler
             Marshal.FreeHGlobal(mem);
 
             Write(address, structure);
+
+            return (uint)size;
         }
 
         public void Write(Address address, byte[] values)

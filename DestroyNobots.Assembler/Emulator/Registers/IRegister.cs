@@ -11,5 +11,8 @@ namespace DestroyNobots.Assembler.Emulator.Registers
         void Increment();
 
         void Decrement();
+
+        void Add(IConvertible value);
+        void Substract(IConvertible value);
     }
 }
