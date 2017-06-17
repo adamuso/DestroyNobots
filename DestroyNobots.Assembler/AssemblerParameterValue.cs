@@ -1,94 +1,31 @@
-﻿using System;
-
-namespace DestroyNobots.Assembler
+﻿namespace DestroyNobots.Assembler
 {
-    public class AssemblerParameterValue : IConvertible, IAssemblerInstructionParameter
+    public struct AssemblerParameterValue
     {
-        public IConvertible Value { get; set; }
+        public int Value { get; private set; }
+        public PointerType? PointerSize { get; private set; }
+        public RegisterType? RegisterType { get; private set; }
 
-        public TypeCode GetTypeCode()
+        public AssemblerParameterValue(int value, PointerType? pointerSize, RegisterType? registerType)
         {
-            return Value.GetTypeCode();
+            this.Value = value;
+            this.PointerSize = pointerSize;
+            this.RegisterType = registerType;
         }
 
-        public bool ToBoolean(IFormatProvider provider)
+        public static implicit operator AssemblerParameterValue(int value)
         {
-            return Value.ToBoolean(provider);
+            return new AssemblerParameterValue(value, null, null);
         }
 
-        public byte ToByte(IFormatProvider provider)
+        public static implicit operator int(AssemblerParameterValue value)
         {
-            return Value.ToByte(provider);
+            return value.Value;
         }
 
-        public char ToChar(IFormatProvider provider)
+        public static implicit operator Address(AssemblerParameterValue value)
         {
-            return Value.ToChar(provider);
-        }
-
-        public DateTime ToDateTime(IFormatProvider provider)
-        {
-            return Value.ToDateTime(provider);
-        }
-
-        public decimal ToDecimal(IFormatProvider provider)
-        {
-            return Value.ToDecimal(provider);
-        }
-
-        public double ToDouble(IFormatProvider provider)
-        {
-            return Value.ToDouble(provider);
-        }
-
-        public short ToInt16(IFormatProvider provider)
-        {
-            return Value.ToInt16(provider);
-        }
-
-        public int ToInt32(IFormatProvider provider)
-        {
-            return Value.ToInt32(provider);
-        }
-
-        public long ToInt64(IFormatProvider provider)
-        {
-            return Value.ToInt64(provider);
-        }
-
-        public sbyte ToSByte(IFormatProvider provider)
-        {
-            return Value.ToSByte(provider);
-        }
-
-        public float ToSingle(IFormatProvider provider)
-        {
-            return Value.ToSingle(provider);
-        }
-
-        public string ToString(IFormatProvider provider)
-        {
-            return Value.ToString(provider);
-        }
-
-        public object ToType(Type conversionType, IFormatProvider provider)
-        {
-            return Value.ToType(conversionType, provider);
-        }
-
-        public ushort ToUInt16(IFormatProvider provider)
-        {
-            return Value.ToUInt16(provider);
-        }
-
-        public uint ToUInt32(IFormatProvider provider)
-        {
-            return Value.ToUInt32(provider);
-        }
-
-        public ulong ToUInt64(IFormatProvider provider)
-        {
-            return Value.ToUInt64(provider);
+            return (Address)value.Value;
         }
     }
 }

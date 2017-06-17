@@ -1,7 +1,9 @@
 ﻿mov r1, lidt_ptrs
-mov [r1], int0, dword
+mov addr[lidt_ptrs], int0
+mov r2, addr[lidt_ptrs]
+mov addr[r1], r2
 add r1, 4
-mov [r1], int1, dword
+mov addr[r1], int1
 mov r1, lidt_ptrs
 lidt r1
 

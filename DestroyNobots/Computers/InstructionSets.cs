@@ -1,5 +1,7 @@
 ﻿using DestroyNobots.Assembler;
 using DestroyNobots.Assembler.Emulator;
+using DestroyNobots.Assembler.Emulator.Registers;
+using System;
 using System.Collections.Generic;
 
 namespace DestroyNobots.Computers
@@ -429,55 +431,44 @@ namespace DestroyNobots.Computers
 
             #region Memory operations
 
-            { 0x2C, new AssemblerInstruction("mov", (instruction, context, parameters) =>
+            { 0x2C, new AssemblerInstruction<Register<int>, IPointer>("mov", (instruction, context, register, pointer) =>
                 {
-                    var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (parameters[2] == 1)
-                        processor.Registers[parameters[0]].Value = processor.Context.Memory.Read<byte>(parameters[1]);
-                    else if (parameters[2] == 2)
-                        processor.Registers[parameters[0]].Value = processor.Context.Memory.Read<short>(parameters[1]);
-                    else if (parameters[2] == 4)
-                        processor.Registers[parameters[0]].Value = processor.Context.Memory.Read<int>(parameters[1]);
+                    if (pointer.Size == 1)
+                        register.Value = pointer.As<byte>().GetValue();
+                    else if (pointer.Size == 2)
+                        register.Value = pointer.As<short>().GetValue();
+                    else if (pointer.Size == 4)
+                        register.Value = pointer.As<int>().GetValue();
+                    else
+                        throw new Exception("Register too small");
                 }
             )},
 
 
-            { 0x2D, new AssemblerInstruction("mov", (instruction, context, parameters) =>
+            { 0x2D, new AssemblerInstruction<IPointer, Register<int>>("mov", (instruction, context, pointer, register) =>
                 {
-                    var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (parameters[2] == 1)
-                        processor.Context.Memory.Write<byte>(parameters[0], (byte)processor.Registers[parameters[1]].Value);
-                    else if (parameters[2] == 2)
-                        processor.Context.Memory.Write<short>(parameters[0], (short)processor.Registers[parameters[1]].Value);
-                    else if (parameters[2] == 4)
-                        processor.Context.Memory.Write<int>(parameters[0], processor.Registers[parameters[1]].Value);
+                    if (pointer.Size == 1)
+                        pointer.As<byte>().SetValue((byte)register.Value);
+                    else if (pointer.Size == 2)
+                        pointer.As<short>().SetValue((short)register.Value);
+                    else if (pointer.Size == 4)
+                        pointer.As<int>().SetValue(register.Value);
+                    else if (pointer.Size == 8)
+                        pointer.As<long>().SetValue(register.Value);
                 }
             )},
 
-            { 0x2E, new AssemblerInstruction("mov", (instruction, context, parameters) =>
-               {
-                    var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (parameters[2] == 1)
-                        processor.Context.Memory.Write<byte>(parameters[0], (byte)parameters[1]);
-                    else if (parameters[2] == 2)
-                        processor.Context.Memory.Write<short>(parameters[0], (short)parameters[1]);
-                    else if (parameters[2] == 4)
-                        processor.Context.Memory.Write<int>(parameters[0], parameters[1]);
+            { 0x2E, new AssemblerInstruction<IPointer, ImmediateValue>("mov", (instruction, context, pointer, value) =>
+                {
+                    if(pointer.Size == 1)
+                        pointer.As<byte>().SetValue(value.ToByte(null));
+                    if(pointer.Size == 2)
+                        pointer.As<short>().SetValue(value.ToInt16(null));
+                    if(pointer.Size == 4)
+                        pointer.As<int>().SetValue(value.ToInt32(null));
+                    if(pointer.Size == 8)
+                        pointer.As<long>().SetValue(value.ToInt64(null));
                }
-            )},
-
-            { 0x2F, new AssemblerInstruction("mov", (instruction, context, parameters) =>
-               {
-                    var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    processor.Context.Memory.Write<int>(parameters[0], processor.Registers[parameters[1]].Value);
-               }
-            )},
-
-            { 0x30, new AssemblerInstruction("mov", (instruction, context, parameters) =>
-                {
-                    var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    processor.Registers[parameters[0]].Value = processor.Context.Memory.Read<int>(parameters[1]);
-                }
             )},
             #endregion
 
@@ -493,19 +484,16 @@ namespace DestroyNobots.Computers
                 }
             )},
 
-            { 0x33, new AssemblerInstruction("out", (instruction, context, parameters) =>
+            { 0x33, new AssemblerInstruction<ImmediateValue, Register<int>>("out", (instruction, context, value, register) =>
                 {
                     var computer = context.GetContext<Computer>();
-                    var processor = computer.GetSpecificProcessor<VCM86Processor>();
-                    var register = processor.Registers[parameters[1]];
 
-                    if(computer.Ports.ContainsKey((ushort)parameters[0]))
+                    if(computer.Ports.ContainsKey(value.ToUInt16(null)))
                     {
-                        computer.Ports[(ushort)parameters[0]].Out(register.Value, register.Size);
+                        computer.Ports[value.ToUInt16(null)].Out(register.Value, register.Size);
                     }
                 }
             )},
-
 
             { 0x34, new AssemblerInstruction("in", (instruction, context, parameters) =>
                 {

@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using System;
+using System.Runtime.InteropServices;
 
 namespace DestroyNobots.Assembler
 {
@@ -8,7 +9,7 @@ namespace DestroyNobots.Assembler
 
         public Address Address { get; set; }
         public int Size { get { return Marshal.SizeOf(typeof(T)); } }
-        
+
         public Pointer(IMemory memory, Address address)
         {
             this.Address = address;
@@ -34,5 +35,32 @@ namespace DestroyNobots.Assembler
         {
             memory.Write(Address + offset * Size, value);
         }
+
+        public Pointer<T1> As<T1>() where T1 : struct
+        {
+            return new Pointer<T1>(memory, Address);
+        }
+
+        void IPointer.SetValue<T1>(T1 value)
+        {
+            memory.Write(Address, value);
+        }
+
+        void IPointer.SetValue<T1>(int offset, T1 value)
+        {
+            memory.Write(Address + offset, value);
+        }
+
+        T1 IPointer.GetValue<T1>()
+        {
+            return memory.Read<T1>(Address);
+        }
+
+        T1 IPointer.GetValue<T1>(int offset)
+        {
+            return memory.Read<T1>(Address + offset);
+        }
+
+        public static int TypeSize { get { return Marshal.SizeOf(typeof(T)); } }
     }
 }

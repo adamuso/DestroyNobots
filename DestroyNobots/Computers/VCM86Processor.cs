@@ -26,6 +26,8 @@ namespace DestroyNobots.Computers
         {
             AssemblerCompiler compiler = new AssemblerCompiler(this);
 
+            compiler.LoadInstructionFromSet();
+
             #region Basic arithmetic operations
             compiler.SetInstruction("add", 0x1, 2,  AssemblerParameters.Register, AssemblerParameters.Register);
             compiler.SetInstruction("add", 0x2, 2,  AssemblerParameters.Register, AssemblerParameters.Value);
@@ -87,20 +89,18 @@ namespace DestroyNobots.Computers
             #endregion
 
             #region Memory operations
-            compiler.SetInstruction("mov", 0x2C, 3,  AssemblerParameters.Register, AssemblerParameters.Pointer, AssemblerParameters.Value);
-            compiler.SetInstruction("mov", 0x2D, 3,  AssemblerParameters.Pointer, AssemblerParameters.Register, AssemblerParameters.Value);
-            compiler.SetInstruction("mov", 0x2E, 3,  AssemblerParameters.Pointer, AssemblerParameters.Value, AssemblerParameters.Value);
-            compiler.SetInstruction("mov", 0x2F, 2,  AssemblerParameters.Pointer, AssemblerParameters.Register);
-            compiler.SetInstruction("mov", 0x30, 2,  AssemblerParameters.Register, AssemblerParameters.Pointer);
+            //compiler.SetInstruction("mov", 0x2C, 2,  AssemblerParameters.Register, AssemblerParameters.Pointer);
+            //compiler.SetInstruction("mov", 0x2D, 2,  AssemblerParameters.Pointer, AssemblerParameters.Register);
+            //compiler.SetInstruction("mov", 0x2E, 2,  AssemblerParameters.Pointer, AssemblerParameters.Value);
             #endregion
 
             #region I/O Operations
             compiler.SetInstruction("out", 0x32, 2, AssemblerParameters.Value, AssemblerParameters.Value);
-            compiler.SetInstruction("out", 0x33, 2, AssemblerParameters.Value, AssemblerParameters.Register);
+            //compiler.SetInstruction("out", 0x33, 2, AssemblerParameters.Value, AssemblerParameters.Register);
             compiler.SetInstruction("in", 0x34, 2, AssemblerParameters.Value, AssemblerParameters.Register);
             #endregion
 
-            for (int i = 0; i < RegistersCount - 2; i++)
+            for (byte i = 0; i < RegistersCount - 2; i++)
                 compiler.SetRegister("r" + (i + 1), i);
 
             compiler.SetRegister("sp", StackPointerRegisterNumber);

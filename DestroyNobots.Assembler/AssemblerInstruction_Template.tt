@@ -1,0 +1,41 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+using System;
+
+namespace DestroyNobots.Assembler
+{
+	<# for(int i = 1; i <= 3; i++)
+	{#>
+public class AssemblerInstruction<<# for(int j = 1; j <= i; j++) { #>T<#= "" + j + (j != i ? ", " : "") #><# } #>> : AssemblerInstruction
+		<# for(int j = 1; j <= i; j++) { #> where T<#= j #> : IAssemblerInstructionParameter <# } #>
+
+	{
+		InstructionAction<<# for(int j = 1; j <= i; j++) { #>T<#= "" + j + (j != i ? ", " : "") #><# } #>> action;
+
+		public AssemblerInstruction(string name, InstructionAction<<# for(int j = 1; j <= i; j++) { #>T<#= "" + j + (j != i ? ", " : "") #><# } #>> action, bool convertLabelsToOffset = false) 
+			: base(name, null, convertLabelsToOffset)
+		{
+			this.action = action;
+
+			SetParameters(GetParametersFromTypes(<# for(int j = 1; j <= i; j++) { #>typeof(T<#= "" + j + (j != i ? "), " : ")") #><# } #>));
+		}
+
+		public override void Eval(IRuntimeContext context, params AssemblerParameterValue[] @params)
+		{
+			if (@params.Length == <#= i #>)
+			{<# for (int j = 1; j <= i; j++) { #> 
+				T<#=j#> param<#=j#> = GetValueFromParameter<T<#=j#>>(context, @params[<#= j - 1 #>]);<#}#> 
+
+				action(this, context, <# for (int j = 1; j <= i; j++) { #>param<#= "" + j + (j != i ? ", " : "") #><# } #>);
+			}
+				
+			else
+				throw new ArgumentOutOfRangeException("This method is only applicable for <#= i #> arguments!");
+		}
+	}
+	<#}#> 
+}
