@@ -25,8 +25,11 @@ namespace DestroyNobots.Assembler.Emulator
 
             this.rom = rom;
             this.Processor = processor;
-            this.Processor.Computer = this;
+            this.Processor.Context = this;
+
             this.physicalMemory = new RAMMemory(this, memory);
+
+            this.Processor.Initialize();
 
             powerStatus = false;
         }
@@ -92,7 +95,7 @@ namespace DestroyNobots.Assembler.Emulator
             if (powerStatus)
                 Processor.Step();
         }
-
+        
         public void Reset()
         {
             if(powerStatus)

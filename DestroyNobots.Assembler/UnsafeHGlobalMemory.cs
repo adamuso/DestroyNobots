@@ -18,41 +18,51 @@ namespace DestroyNobots.Assembler
             memory = Marshal.AllocHGlobal(memsize);
         }
 
-        public byte Read(Pointer address)
+        public byte Read(Address address)
         {
             return Marshal.ReadByte(new IntPtr(memory.ToInt64() + address));
         }
 
-        public byte[] Read(Pointer address, int len)
+        public byte[] Read(Address address, int len)
         {
             byte[] ret = new byte[len];
             Marshal.Copy(new IntPtr(memory.ToInt64() + address), ret, 0, len);
             return ret;
         }
 
-        public T Read<T>(Pointer address) where T : struct
+        public T Read<T>(Address address) where T : struct
         {
             T ret = new T();
             ret = (T)Marshal.PtrToStructure(new IntPtr(memory.ToInt64() + address), typeof(T));
             return ret;
         }
 
-        public void Write(Pointer address, byte value)
+        public T Read<T>(Address address, out uint size) where T : struct
+        {
+            T ret = new T();
+            ret = (T)Marshal.PtrToStructure(new IntPtr(memory.ToInt64() + address), typeof(T));
+            size = (uint)Marshal.SizeOf(typeof(T));
+            return ret;
+        }
+
+        public void Write(Address address, byte value)
         {
             Marshal.WriteByte(new IntPtr(memory.ToInt64() + address), value);
         }
 
-        public void Write<T>(Pointer address, T value) where T : struct
+        public uint Write<T>(Address address, T value) where T : struct
         {
             Marshal.StructureToPtr(value, new IntPtr(memory.ToInt64() + address), true);
+
+            return (uint)Marshal.SizeOf(typeof(T));
         }
 
-        public void Write(Pointer address, byte[] values)
+        public void Write(Address address, byte[] values)
         {
             Marshal.Copy(values, 0, new IntPtr(memory.ToInt64() + address), values.Length);
         }
 
-        public void Write(Pointer address, byte value, uint count)
+        public void Write(Address address, byte value, uint count)
         {
             for(uint i = 0; i < count; i++)
             {
@@ -65,7 +75,7 @@ namespace DestroyNobots.Assembler
             Marshal.FreeHGlobal(memory);
         }
 
-        public byte[] Read(Pointer address, uint len)
+        public byte[] Read(Address address, uint len)
         {
             throw new NotImplementedException();
         }

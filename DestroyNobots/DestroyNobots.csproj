@@ -49,6 +49,13 @@
     <Compile Include="Engine\DetailedTile.cs" />
     <Compile Include="Engine\Entities\Buildings\Radar.cs" />
     <Compile Include="Engine\Entities\EntityRenderer.cs" />
+    <Compile Include="Engine\Entities\Projectiles\Projectile.cs" />
+    <Compile Include="Engine\Entities\Projectiles\Shell.cs" />
+    <Compile Include="Engine\Entities\Vehicles\Tank.cs" />
+    <Compile Include="Engine\Entities\Vehicles\Peripherals\EngineController.cs" />
+    <Compile Include="Engine\Polygon.cs" />
+    <Compile Include="Engine\Projection.cs" />
+    <Compile Include="Engine\Transform.cs" />
     <Compile Include="Engine\Input\IInputElementContainer.cs" />
     <Compile Include="Engine\Input\InputElementManager.cs" />
     <Compile Include="Engine\Input\KeyboardEventArgs.cs" />
@@ -56,7 +63,7 @@
     <Compile Include="Engine\Input\MouseEventArgs.cs" />
     <Compile Include="Engine\RendererServiceContainer.cs" />
     <Compile Include="Engine\IRenderer.cs" />
-    <Compile Include="Engine\IRendererHolder.cs" />
+    <Compile Include="Engine\IRendererServiceProvider.cs" />
     <Compile Include="Engine\Entities\Vehicles\Buggy.cs" />
     <Compile Include="Engine\Entities\Buildings\Building.cs" />
     <Compile Include="Engine\Entities\Entity.cs" />
@@ -69,6 +76,7 @@
     <Compile Include="Engine\TextureManager.cs" />
     <Compile Include="Engine\Tile.cs" />
     <Compile Include="Engine\TileSet.cs" />
+    <Compile Include="Engine\Vector2Extensions.cs" />
     <Compile Include="IRenderable.cs" />
     <Compile Include="IUpdateable.cs" />
     <Compile Include="Program.cs" />
@@ -150,6 +158,10 @@
       <Project>{8b5d4394-f83f-4554-8395-4fa7033fef7c}</Project>
       <Name>DestroyNobots.Assembler</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Farseer Physics Engine 3.5\Farseer Physics MonoGame.csproj">
+      <Project>{0aad36e3-51a5-4a07-ab60-5c8a66bd38b7}</Project>
+      <Name>Farseer Physics MonoGame</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="BuggyCode.txt">
@@ -159,6 +171,7 @@
     <Content Include="Content\heightmap.png" />
     <Content Include="Content\ts.png" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

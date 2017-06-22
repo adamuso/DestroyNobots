@@ -17,6 +17,7 @@ namespace DestroyNobots.Engine.Entities
         public T Create<T>() where T : Entity, new()
         {
             T entity = new T() { Game = Game };
+            entity.Initialize();
             entities.AddLast(entity);
 
             return entity;

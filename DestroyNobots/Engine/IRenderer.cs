@@ -4,6 +4,8 @@ namespace DestroyNobots.Engine
 {
     public interface IRenderer
     {
+        int Priority { get; }
+
         void Draw(IRenderable renderable, GameTime gt);
     }
 }

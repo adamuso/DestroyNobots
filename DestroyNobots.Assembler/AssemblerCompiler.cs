@@ -8,24 +8,36 @@ using System.Text;
 namespace DestroyNobots.Assembler
 {
     public class AssemblerCompiler
-    {
+    { 
         IInstructionSetProvider instructionSetProvider;
         Dictionary<string, AssemblerOpcodeSet> instructions;
-        Dictionary<string, int> registers;
+        Dictionary<string, Tuple<byte, RegisterType>> registers;
         Dictionary<string, int> constants;
         Dictionary<string, int> labels;
 
         // parser info
         int line;
 
+        public IInstructionSetProvider InstructionSetProvider { get { return instructionSetProvider; } }
+
         public AssemblerCompiler(IInstructionSetProvider instructionSetProvider)
         {
             this.instructionSetProvider = instructionSetProvider;
             instructions = new Dictionary<string, AssemblerOpcodeSet>();
-            registers = new Dictionary<string, int>();
+            registers = new Dictionary<string, Tuple<byte, RegisterType>>();
             constants = new Dictionary<string, int>();
             labels = new Dictionary<string, int>();
             line = 1;
+        }
+
+        #region Compiler symbols
+        public void LoadInstructionFromSet()
+        {
+            foreach(var instruction in InstructionSetProvider.InstructionSet)
+            {
+                if (instruction.Value.Parameters != null && !string.IsNullOrEmpty(instruction.Value.Name))
+                    SetInstruction(instruction.Value.Name, instruction.Key, instruction.Value.ParametersCount, instruction.Value.Parameters);
+            }
         }
 
         public void SetInstruction(string name, byte opcode, int params_number, params AssemblerParameters[] parameters)
@@ -33,13 +45,14 @@ namespace DestroyNobots.Assembler
             if (!instructions.ContainsKey(name.ToLower()))
                 instructions[name.ToLower()] = new AssemblerOpcodeSet(instructionSetProvider);
 
-            instructions[name.ToLower()].Add(opcode);
+            if (instructions[name.ToLower()].Add(opcode))
+            {
+                if (params_number == 0 && parameters.Length == 0)
+                    instructions[name.ToLower()].Default = opcode;
 
-            if (params_number == 0 && parameters.Length == 0)
-                instructions[name.ToLower()].Default = opcode;
-
-            AssemblerInstruction instructon = instructionSetProvider.InstructionSet[opcode];
-            instructon.SetParameters(parameters);
+                AssemblerInstruction instructon = instructionSetProvider.InstructionSet[opcode];
+                instructon.SetParameters(parameters);
+            }
         }
 
         public void SetConstant(string name, int value)
@@ -47,11 +60,13 @@ namespace DestroyNobots.Assembler
             constants[name] = value;
         }
 
-        public void SetRegister(string name, int regindex)
+        public void SetRegister(string name, byte regindex, RegisterType type = RegisterType.Full)
         {
-            registers[name.ToLower()] = regindex;
+            registers[name.ToLower()] = new Tuple<byte, RegisterType>(regindex, type);
         }
+        #endregion
 
+        #region Compiling
         private void PreProcess(System.IO.Stream stream)
         {
             System.IO.BinaryReader reader = new System.IO.BinaryReader(stream);
@@ -233,6 +248,21 @@ namespace DestroyNobots.Assembler
                     {
                         // parameter is register/const
                         string reg = readIdentifier(stream, reader);
+                        PointerType? pointerType = pointer ? pointerType = PointerType.Bit8 : null;
+
+                        if (!pointer && reg.ToLower() == "byte" || reg.ToLower() == "word" || reg.ToLower() == "dword" || reg.ToLower() == "addr" || reg.ToLower() == "qword")
+                        {
+                            skipSpaces(stream);
+
+                            if ((char)reader.PeekChar() == '[')
+                            {
+                                pointer = true;
+                                reader.ReadChar();
+                            }
+
+                            if (pointer)
+                                reg = readIdentifier(stream, reader);
+                        }
 
                         if (constants.ContainsKey(reg))
                         {
@@ -244,11 +274,13 @@ namespace DestroyNobots.Assembler
                             args.Add(int.MaxValue);
                             _params.Add(pointer ? AssemblerParameters.Pointer : AssemblerParameters.Address);
                         }
-                        else
+                        else if (registers.ContainsKey(reg))
                         {
-                            args.Add(registers[reg.ToLower()]);
+                            args.Add(registers[reg.ToLower()].Item1);
                             _params.Add(pointer ? AssemblerParameters.PointerInRegister : AssemblerParameters.Register);
                         }
+                        else
+                            throw new Exception("Undefined identifier: " + reg);
                     }
                     else if (char.IsDigit((char)reader.PeekChar()))
                     {
@@ -278,7 +310,7 @@ namespace DestroyNobots.Assembler
                 #region Memory usage calculating
                 byte opcode = opcodes.Find(_params.ToArray());
                 AssemblerInstruction asm = InstructionSetProvider.InstructionSet[opcode];
-                byte paramstypes = 0;
+                //byte paramstypes = 0;
 
                 //writer.Write(opcode);
                 address += 1;
@@ -286,36 +318,36 @@ namespace DestroyNobots.Assembler
                 //writer.Write(paramstypes);
                 address += 1;
 
-                for (int i = 0; i < args.Count; i++)
-                {
-                    if (_params[i] == AssemblerParameters.Register)
-                    {
-                        paramstypes |= (byte)(0x00 << (i * 2));
-                    }
-                    else if ((_params[i] & AssemblerParameters.Value) != 0)
-                    {
-                        if ((_params[i] & AssemblerParameters.Pointer) != 0) // Address
-                        {
-                            paramstypes |= (byte)(0x02 << (i * 2));
-                        }
-                        else
-                        {
-                            if (args[i] < byte.MaxValue)
-                                paramstypes |= (byte)(0x00 << (i * 2));
-                            else if (args[i] < short.MaxValue)
-                                paramstypes |= (byte)(0x01 << (i * 2));
-                            else
-                                paramstypes |= (byte)(0x02 << (i * 2));
-                        }
-                    }
-                    else if ((_params[i] & AssemblerParameters.Pointer) != 0)
-                    {                   
-                        if ((_params[i] & AssemblerParameters.Register) != 0)
-                            paramstypes |= (byte)(0x01 << (i * 2));
-                        else
-                            paramstypes |= (byte)(0x00 << (i * 2));
-                    }
-                }
+                //for (int i = 0; i < args.Count; i++)
+                //{
+                //    if (_params[i] == AssemblerParameters.Register)
+                //    {
+                //        paramstypes |= (byte)(0x00 << (i * 2));
+                //    }
+                //    else if ((_params[i] & AssemblerParameters.Value) != 0)
+                //    {
+                //        if ((_params[i] & AssemblerParameters.Pointer) != 0) // Address
+                //        {
+                //            paramstypes |= (byte)(0x02 << (i * 2));
+                //        }
+                //        else
+                //        {
+                //            if (args[i] < byte.MaxValue)
+                //                paramstypes |= (byte)(0x00 << (i * 2));
+                //            else if (args[i] < short.MaxValue)
+                //                paramstypes |= (byte)(0x01 << (i * 2));
+                //            else
+                //                paramstypes |= (byte)(0x02 << (i * 2));
+                //        }
+                //    }
+                //    else if ((_params[i] & AssemblerParameters.Pointer) != 0)
+                //    {                   
+                //        if ((_params[i] & AssemblerParameters.Register) != 0)
+                //            paramstypes |= (byte)(0x01 << (i * 2));
+                //        else
+                //            paramstypes |= (byte)(0x00 << (i * 2));
+                //    }
+                //}
 
                 for (int i = 0; i < args.Count; i++)
                 {
@@ -574,8 +606,8 @@ namespace DestroyNobots.Assembler
 
                 AssemblerOpcodeSet opcodes = instructions[instruction.ToLower()];      // get opcode from instruction
 
-                List<int> args = new List<int>();
-                List<AssemblerParameters> _params = new List<AssemblerParameters>();
+                List<AssemblerParameterValue> args = new List<AssemblerParameterValue>();
+                List<AssemblerParameters> @params = new List<AssemblerParameters>();
                 int parnum = 4;
 
                 if (opcodes.Count == 1)
@@ -598,29 +630,57 @@ namespace DestroyNobots.Assembler
                         // parameter is register/const
 
                         string reg = readIdentifier(stream, reader);
+                        PointerType? pointerType = pointer ? pointerType = PointerType.Bit8 : null;
+
+                        if(!pointer && reg.ToLower() == "byte" || reg.ToLower() == "word" || reg.ToLower() == "dword" || reg.ToLower() == "addr" || reg.ToLower() == "qword")
+                        {
+                            skipSpaces(stream);
+
+                            if ((char)reader.PeekChar() == '[')
+                            {
+                                pointer = true;
+                                reader.ReadChar();
+                            }
+
+                            if(pointer)
+                            {
+                                if (reg.ToLower() == "byte")
+                                    pointerType = PointerType.Bit8;
+                                else if (reg.ToLower() == "word")
+                                    pointerType = PointerType.Bit16;
+                                else if (reg.ToLower() == "dword" || reg.ToLower() == "addr")
+                                    pointerType = PointerType.Bit32;
+                                else if (reg.ToLower() == "qword")
+                                    pointerType = PointerType.Bit64;
+
+                                reg = readIdentifier(stream, reader);
+                            }
+                        }
 
                         if (constants.ContainsKey(reg))
                         {
-                            args.Add(constants[reg]);
-                            _params.Add(pointer ? AssemblerParameters.Pointer : AssemblerParameters.Value);
+                            args.Add(new AssemblerParameterValue(constants[reg], pointerType, null));
+                            @params.Add(pointer ? AssemblerParameters.Pointer : AssemblerParameters.Value);
                         }
                         else if (labels.ContainsKey(reg))
                         {
-                            args.Add(labels[reg]);
-                            _params.Add(pointer ? AssemblerParameters.Pointer : AssemblerParameters.Address);
+                            args.Add(new AssemblerParameterValue(labels[reg], pointerType, null));
+                            @params.Add(pointer ? AssemblerParameters.Pointer : AssemblerParameters.Address);
+                        }
+                        else if (registers.ContainsKey(reg))
+                        {
+                            args.Add(new AssemblerParameterValue(registers[reg.ToLower()].Item1, pointerType, registers[reg.ToLower()].Item2));
+                            @params.Add(pointer ? AssemblerParameters.PointerInRegister : AssemblerParameters.Register);
                         }
                         else
-                        {
-                            args.Add(registers[reg.ToLower()]);
-                            _params.Add(pointer ? AssemblerParameters.PointerInRegister : AssemblerParameters.Register);
-                        }
+                            throw new Exception("Undefined identifier: " + reg);
                     }
                     else if (char.IsDigit((char)reader.PeekChar()))
                     {
                         // parameter is value/number
 
                         args.Add(readIntLiteral(stream, reader));
-                        _params.Add(pointer ? AssemblerParameters.Pointer : AssemblerParameters.Value);
+                        @params.Add(pointer ? AssemblerParameters.Pointer : AssemblerParameters.Value);
                     }
 
                     if (pointer)
@@ -639,96 +699,66 @@ namespace DestroyNobots.Assembler
                         break;
                 }
 
-                byte opcode = opcodes.Find(_params.ToArray());
+                byte opcode = opcodes.Find(@params.ToArray());
                 AssemblerInstruction asm = instructionSetProvider.InstructionSet[opcode];
-                byte paramstypes = 0;
+                byte paramstypes = EncodeParamsTypes(args, @params);
                 int startaddress = address;
 
                 writer.Write(opcode);
                 address += 1;
-
-                for (int i = 0; i < args.Count; i++)
-                {
-                    if (_params[i] == AssemblerParameters.Register)
-                    {
-                        paramstypes |= (byte)(0x00 << (i * 2));
-                    }
-                    else if ((_params[i] & AssemblerParameters.Value) != 0)
-                    {
-                        if ((_params[i] & AssemblerParameters.Pointer) != 0) // Address
-                        {
-                            paramstypes |= (byte)(0x02 << (i * 2));
-                        }
-                        else
-                        {
-                            if (args[i] < byte.MaxValue)
-                                paramstypes |= (byte)(0x00 << (i * 2));
-                            else if (args[i] < short.MaxValue)
-                                paramstypes |= (byte)(0x01 << (i * 2));
-                            else
-                                paramstypes |= (byte)(0x02 << (i * 2));
-                        }
-                    }
-                    else if ((_params[i] & AssemblerParameters.Pointer) != 0)
-                    {
-                        if ((_params[i] & AssemblerParameters.Register) != 0)
-                            paramstypes |= (byte)(0x01 << (i * 2));
-                        else
-                            paramstypes |= (byte)(0x00 << (i * 2));
-                    }
-                }
-
                 writer.Write(paramstypes);
                 address += 1;
 
                 for (int i = 0; i < args.Count; i++)
                 {
-                    if (_params[i] == AssemblerParameters.Register)
+                    if (@params[i] == AssemblerParameters.Register)
                     {
-                        writer.Write((byte)args[i]);
+                        writer.Write((byte)args[i].Value);
                         address += 1;
                     }
-                    else if ((_params[i] & AssemblerParameters.Value) != 0)
+                    else if ((@params[i] & AssemblerParameters.Value) != 0)
                     {
-                        if ((_params[i] & AssemblerParameters.Pointer) != 0) // Address
+                        int arg = args[i].Value;
+
+                        if ((@params[i] & AssemblerParameters.Pointer) != 0) // Address
                         {
                             address += 4;
-
+                            
                             if (asm.ConvertLabelsToOffsets)
-                                writer.Write(args[i] - address);
+                                writer.Write(arg - address);
                             else
-                                writer.Write(args[i]);
+                                writer.Write(arg);
                         }
                         else
-                        { 
-                            if (args[i] < byte.MaxValue)
+                        {
+                            if (arg < byte.MaxValue)
                             {
-                                writer.Write((byte)args[i]);
+                                writer.Write((byte)arg);
                                 address += 1;
                             }
-                            else if (args[i] < short.MaxValue)
+                            else if (arg < short.MaxValue)
                             {
-                                writer.Write((short)args[i]);
+                                writer.Write((short)arg);
                                 address += 2;
                             }
                             else
                             {
-                                writer.Write(args[i]);
+                                writer.Write(arg);
                                 address += 4;
                             }
                         }
                     }
-                    else if ((_params[i] & AssemblerParameters.Pointer) != 0)
+                    else if ((@params[i] & AssemblerParameters.Pointer) != 0)
                     {
-                        if ((_params[i] & AssemblerParameters.Register) != 0)
+                        if ((@params[i] & AssemblerParameters.Register) != 0)
                         {
-                            writer.Write((byte)args[i]);
+                            writer.Write((byte)args[i].Value);
 
                             address += 1;
                         }
                         else
                         {
-                            writer.Write(args[i]);
+                            writer.Write(args[i].Value);
 
                             address += 4;
                         }
@@ -736,7 +766,7 @@ namespace DestroyNobots.Assembler
                 }
             }
 
-            byte[] zero = BitConverter.GetBytes((int)0);
+            byte[] zero = BitConverter.GetBytes(0);
             buffer.Write(zero, 0, zero.Length);
 
             //instructionSetProvider.Memory.Write(instructionSetProvider.ProgramMemory, buffer.ToArray());
@@ -748,6 +778,61 @@ namespace DestroyNobots.Assembler
             return ((value < 0 ? (-value << 1 | 1) : (value << 1)));
         }
 
+        private byte EncodeParamsTypes(List<AssemblerParameterValue> args, List<AssemblerParameters> @params)
+        {
+            byte paramstypes = 0;
+            
+            for (int i = 0; i < args.Count && i < 3; i++)
+            {
+                if (@params[i] == AssemblerParameters.Register)
+                {
+                    byte registerType = (byte)args[i].RegisterType;
+
+                    paramstypes |= (byte)((registerType % 0x04) << (i * 2));
+
+                    if (registerType >= 0x04)
+                        EncodeParameterFlag(ref paramstypes, i);
+                }
+                else if ((@params[i] & AssemblerParameters.Value) != 0)
+                {
+                    int arg = args[i].Value;
+
+                    if ((@params[i] & AssemblerParameters.Pointer) != 0) // Address
+                    {
+                        paramstypes |= (byte)(0x02 << (i * 2));
+                    }
+                    else
+                    {
+                        if (arg < byte.MaxValue)
+                            paramstypes |= (byte)(0x00 << (i * 2));
+                        else if (arg < short.MaxValue)
+                            paramstypes |= (byte)(0x01 << (i * 2));
+                        else
+                            paramstypes |= (byte)(0x02 << (i * 2));
+                    }
+                }
+                else if ((@params[i] & AssemblerParameters.Pointer) != 0)
+                {
+                    if ((@params[i] & AssemblerParameters.Register) != 0)
+                        EncodeParameterFlag(ref paramstypes, i);
+
+                    paramstypes |= (byte)((byte)args[i].PointerSize << (i * 2));
+                }
+            }
+
+            return paramstypes;
+        }
+
+        private void EncodeParameterFlag(ref byte paramstypes, int index)
+        {
+            if (index >= 1)
+                throw new Exception("Cannot specify flag value for third parameter!");
+
+            paramstypes |= (byte)(0x40 << index);
+        }
+        #endregion
+
+        #region Reading literals
         private bool readIntValue(System.IO.Stream stream, System.IO.BinaryReader reader, out int value)
         {
             int add = 0;
@@ -893,6 +978,7 @@ namespace DestroyNobots.Assembler
 
             return int.Parse(val);
         }
+        #endregion
 
         private void skipSpaces(System.IO.Stream stream)
         {
@@ -949,7 +1035,5 @@ namespace DestroyNobots.Assembler
 
             return false;
         }
-
-        public IInstructionSetProvider InstructionSetProvider { get { return instructionSetProvider; } }
     }
 }

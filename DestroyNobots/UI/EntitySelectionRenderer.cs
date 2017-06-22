@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using DestroyNobots.Engine;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 
 namespace DestroyNobots.UI
 {
@@ -10,9 +11,12 @@ namespace DestroyNobots.UI
         private Texture2D texture;
         private Entity entity;
 
+        public int Priority { get; set; }
+
         public EntitySelectionRenderer(Entity entity)
         {
             this.entity = entity;
+            Priority = 0;
 
             texture = new Texture2D(entity.Game.GraphicsDevice, 1, 1);
             texture.SetData(new Color[] { Color.White });

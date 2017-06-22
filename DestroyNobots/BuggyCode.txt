@@ -1,29 +1,27 @@
 ﻿mov r1, lidt_ptrs
-mov [r1], int0, dword
+mov addr[lidt_ptrs], int0
+mov r2, addr[lidt_ptrs]
+mov addr[r1], r2
 add r1, 4
-mov [r1], int1, dword
+mov addr[r1], int1
 mov r1, lidt_ptrs
 lidt r1
 
-mov [10000], 10, byte
-mov r2, 20
-mov r3, 0
-div r2, r3
-
 start:
-	inc r3
+	mov r3, 1
+	mov r4, 1
+loop:
+	out 0x0, 0x80
 	out 0x0, r3
-	jmp start
+	out 0x0, 0x81
+	out 0x0, r4
+	halt
+	jmp loop
 
 int0:
-	dec r3
-	out 0x0, r3
-	jmp int0
-
+	halt
 int1:
-	sub r3, 6
-	out 0x0, r3
-	jmp int1
+	halt
 
 lidt_ptrs:
 	reserve 256, dword

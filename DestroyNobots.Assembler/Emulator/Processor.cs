@@ -21,21 +21,27 @@ namespace DestroyNobots.Assembler.Emulator
 
         public Dictionary<byte, AssemblerInstruction> InstructionSet { get; private set; } // opcodes as keys
 
-        public Pointer? InterruptDescriptorTablePointer { get; set; }
+        public Pointer<Address> InterruptDescriptorTablePointer { get; set; }
 
+        IRegister[] IProcessorBase.Registers { get { return Registers; } }
         public Register<T>[] Registers { get; private set; }
-        public ProgramCounter<T> ProgramCounter { get; private set; }
-        public StackPointer<T> StackPointer { get; private set; }
-
+        public ProgramCounter<uint> ProgramCounter { get; private set; }
+        IStackPointer IProcessorBase.StackPointer { get { return StackPointer; } }
+        public StackPointer StackPointer { get; private set; }
+        
         public bool Running { get; private set; }
 
-        public Computer Computer { get; set; }
+        public IRuntimeContext Context { get; set; }
+
+        public abstract byte ProgramCountRegisterNumber { get; }
+        public abstract byte StackPointerRegisterNumber { get; }
+        public abstract byte RegistersCount { get; }
 
         public Processor(Dictionary<byte, AssemblerInstruction> instructions)
         {
-            this.Computer = null;
+            this.Context = null;
             Registers = new Register<T>[RegistersCount];
-            InstructionSet = instructions; 
+            InstructionSet = instructions;
 
             flags = 0;
             abort = false;
@@ -43,8 +49,14 @@ namespace DestroyNobots.Assembler.Emulator
             for (int r = 0; r < RegistersCount; r++)
                 Registers[r] = new Register<T>();
 
-            StackPointer = new StackPointer<T>(this, Registers[StackPointerRegisterNumber], 0, 0);
-            ProgramCounter = new ProgramCounter<T>(this, Registers[ProgramCountRegisterNumber]);
+            StackPointer = new StackPointer(this, new Register<uint>(), 0, 0);
+            ProgramCounter = new ProgramCounter<uint>(this, new Register<uint>());
+        }
+
+        public void Initialize()
+        {
+            InterruptDescriptorTablePointer = new Pointer<Address>(Context.Memory, Address.Null);
+            programMemoryReader = new ProgramMemoryReader<T>(this, Context.Memory);
         }
 
         public void Run()
@@ -118,24 +130,9 @@ namespace DestroyNobots.Assembler.Emulator
                 flags &= ~(0x1 << (int)type);
         }
 
-        public abstract AssemblerCompiler GetAssociatedCompiler();
-
-        protected void RegisterInstruction(byte opcode, AssemblerInstruction instruction)
-        {
-            InstructionSet.Add(opcode, instruction);
-        }
-
-        //protected void RegisterInterruptAction(InterruptAction action)
-        //{
-        //    InterruptAction = action;
-        //}
-
         private void RunProgram(bool step = false)
         {
-            if(programMemoryReader == null)
-                programMemoryReader = new Assembler.ProgramMemoryReader<T>(this, Computer.Memory);
-
-            int instruction = -1;
+            short instruction = -1;
 
             while (instruction != 0 && Running)
             {
@@ -145,7 +142,7 @@ namespace DestroyNobots.Assembler.Emulator
                     break;
                 }
 
-                instruction = Computer.Memory.Read<int>(ProgramCounter.Address);
+                instruction = Context.Memory.Read<short>(ProgramCounter.Address);
 
                 if (instruction == 0 || instruction == -1)
                 {
@@ -153,30 +150,32 @@ namespace DestroyNobots.Assembler.Emulator
                     break;
                 }
 
-                byte opcode = (byte)(instruction & 0xFF); //Memory.read<byte>((ushort)current.Value);
-                byte paramstypes = (byte)((instruction & 0xFF00) >> 8); // Memory.read<byte>((ushort)current.Value + 1);
+                byte opcode = (byte)(instruction & 0xFF);
+                byte paramsTypes = (byte)((instruction & 0x3F00) >> 8); 
+                byte paramsFlagsBinary = (byte)((instruction & 0xC000) >> 14);
+                bool[] paramsFlags = new bool[] { (paramsFlagsBinary & 0x1) != 0, (paramsFlagsBinary & 0x2) != 0 };
                 uint mem = ProgramCounter.Address + 2;
 
                 AssemblerInstruction asm = InstructionSet[opcode];
-                int[] param = new int[asm.ParametersCount];
+                AssemblerParameterValue[] param = new AssemblerParameterValue[asm.ParametersCount];
 
                 for (int i = 0; i < asm.ParametersCount; i++)
                 {
-                    byte pt = (byte)((paramstypes & (0x03 << i * 2)) >> i * 2);
+                    byte pt = (byte)((paramsTypes & (0x03 << i * 2)) >> i * 2);
 
                     if (asm.Parameters[i] == AssemblerParameters.Register)
-                        param[i] = programMemoryReader.ReadRegister(ref mem, pt);
+                        param[i] = programMemoryReader.ReadRegister(ref mem, pt, i < 2 ? paramsFlags[i] : false);
                     else if ((asm.Parameters[i] & AssemblerParameters.Value) != 0)
-                        param[i] = programMemoryReader.ReadValue(ref mem, pt);
+                        param[i] = programMemoryReader.ReadValue(ref mem, pt, i < 2 ? paramsFlags[i] : false);
                     else if (asm.Parameters[i] == AssemblerParameters.Pointer)
-                        param[i] = programMemoryReader.ReadPointer(ref mem, pt);
+                        param[i] = programMemoryReader.ReadPointer(ref mem, pt, i < 2 ? paramsFlags[i] : false);
                 }
 
                 ProgramCounter.Set(mem);
 
                 try
                 {
-                    asm.Eval(Computer, param);
+                    asm.Eval(Context, param);
                 }
                 catch(InterruptSignal interrupt)
                 {
@@ -188,11 +187,8 @@ namespace DestroyNobots.Assembler.Emulator
             }
         }
 
-
-        public abstract byte ProgramCountRegisterNumber { get; }
-        public abstract byte StackPointerRegisterNumber { get; }
-        public abstract byte RegistersCount { get; }
-
         public abstract void Update();
+        public abstract AssemblerCompiler GetAssociatedCompiler();
+
     }
 }

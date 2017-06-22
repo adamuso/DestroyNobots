@@ -1,19 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace DestroyNobots.Assembler
 {
     public interface IMemory : IDisposable
     {
-        byte Read(Pointer address);
-        T Read<T>(Pointer address) where T : struct;
-        byte[] Read(Pointer address, uint len);
-        void Write(Pointer address, byte value);
-        void Write<T>(Pointer address, T value) where T : struct;
-        void Write(Pointer address, byte[] values);
-        void Write(Pointer address, byte value, uint count);
+        byte Read(Address address);
+        T Read<T>(Address address) where T : struct;
+        T Read<T>(Address address, out uint size) where T : struct;
+        byte[] Read(Address address, uint len);
+        void Write(Address address, byte value);
+        uint Write<T>(Address address, T value) where T : struct;
+        void Write(Address address, byte[] values);
+        void Write(Address address, byte value, uint count);
         int MemorySize { get; }
     }
 }

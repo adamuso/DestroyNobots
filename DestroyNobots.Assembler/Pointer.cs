@@ -1,42 +1,66 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Runtime.InteropServices;
 
 namespace DestroyNobots.Assembler
 {
-    public struct Pointer
+    public class Pointer<T> : IPointer where T : struct
     {
-        public uint Value { get; private set; }
+        IMemory memory;
 
-        public Pointer(uint value)
+        public Address Address { get; set; }
+        public int Size { get { return Marshal.SizeOf(typeof(T)); } }
+
+        public Pointer(IMemory memory, Address address)
         {
-            this.Value = value;
+            this.Address = address;
+            this.memory = memory;
         }
 
-        public static implicit operator uint(Pointer p)
+        public T GetValue()
         {
-            return p.Value;
+            return memory.Read<T>(Address);
         }
 
-        public static implicit operator Pointer(uint p)
+        public T GetValue(int offset)
         {
-            return new Pointer(p) ;
+            return memory.Read<T>(Address + offset * Size);
         }
 
-        public static implicit operator Pointer(int p)
+        public void SetValue(T value)
         {
-            return new Pointer((uint)p);
+            memory.Write(Address, value);
         }
 
-        public static implicit operator Pointer(ushort p)
+        public void SetValue(int offset, T value)
         {
-            return new Pointer(p);
+            memory.Write(Address + offset * Size, value);
         }
 
-        public static implicit operator Pointer(short p)
+        public Pointer<T1> As<T1>() where T1 : struct
         {
-            return new Pointer((uint)p);
+            return new Pointer<T1>(memory, Address);
         }
+
+        void IPointer.SetValue<T1>(T1 value)
+        {
+            memory.Write(Address, value);
+        }
+
+        void IPointer.SetValue<T1>(int offset, T1 value)
+        {
+            memory.Write(Address + offset, value);
+        }
+
+        T1 IPointer.GetValue<T1>()
+        {
+            return memory.Read<T1>(Address);
+        }
+
+        T1 IPointer.GetValue<T1>(int offset)
+        {
+            return memory.Read<T1>(Address + offset);
+        }
+
+        public static int TypeSize { get { return Marshal.SizeOf(typeof(T)); } }
     }
 }

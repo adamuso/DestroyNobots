@@ -3,6 +3,7 @@ using DestroyNobots.Engine.Entities;
 using DestroyNobots.Engine.Entities.Vehicles;
 using DestroyNobots.Engine.Input;
 using DestroyNobots.Screens;
+using FarseerPhysics.Dynamics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -27,6 +28,8 @@ namespace DestroyNobots
         public Level Level { get; private set; }
         public InputManager InputManager { get; private set; }
 
+        public World World { get; private set; }
+
         public SpriteFont EditorFont { get; private set; }
 
         public DestroyNobotsGame()
@@ -50,7 +53,7 @@ namespace DestroyNobots
             if (currentScreen != null)
             {
                 currentScreen.Game = this;
-                currentScreen.Load();
+                currentScreen.Initialize();
             }
         }
 
@@ -66,8 +69,15 @@ namespace DestroyNobots
         {
             base.Initialize();
 
+            graphics.PreferredBackBufferWidth = 1280;
+            graphics.PreferredBackBufferHeight = 720;
+            graphics.ApplyChanges();
+
             IsFixedTimeStep = false;
             IsMouseVisible = true;
+
+            World = new World(Vector2.Zero);
+            FarseerPhysics.ConvertUnits.SetDisplayUnitToSimUnitRatio(64);
 
             InputManager = new InputManager();
             TimerManager = new TimerManager();
@@ -129,6 +139,8 @@ namespace DestroyNobots
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+
+            World.Step(1 / 60.0f);
 
             InputManager.Update(gameTime);
             b.Computer.Step();

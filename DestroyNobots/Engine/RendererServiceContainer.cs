@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using System.Linq;
 
 namespace DestroyNobots.Engine
 {
@@ -8,6 +9,8 @@ namespace DestroyNobots.Engine
     {
         private static Dictionary<Type, IRenderer> rendererInstances;
         private Dictionary<Type, IRenderer> renderers;
+
+        public int Priority { get; set; }
 
         static RendererServiceContainer()
         {
@@ -17,6 +20,7 @@ namespace DestroyNobots.Engine
         public RendererServiceContainer()
         {
             renderers = new Dictionary<Type, IRenderer>();
+            Priority = 0;
         }
 
         public void Add<T>() where T : IRenderer, new()
@@ -52,7 +56,7 @@ namespace DestroyNobots.Engine
 
         public void Draw(IRenderable renderable, GameTime gt)
         {
-            foreach (IRenderer renderer in renderers.Values)
+            foreach (IRenderer renderer in renderers.Values.OrderByDescending(p => p.Priority))
             {
                 renderer.Draw(renderable, gt);
             }
