@@ -1,11 +1,15 @@
-﻿namespace DestroyNobots.Engine.Entities.Vehicles
+﻿using Microsoft.Xna.Framework;
+
+namespace DestroyNobots.Engine.Entities.Vehicles
 {
     public class Vehicle : Robot
     {
-        protected float power;
-        protected float rotation;
-
         public Vehicle()
+        {
+            
+        }
+
+        public override void Update(GameTime gt)
         {
 
         }

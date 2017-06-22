@@ -1,6 +1,4 @@
-﻿using DestroyNobots.Assembler.Emulator;
-using DestroyNobots.Assembler.Emulator.Peripherals;
-using DestroyNobots.Engine.Entities.Vehicles.Peripherals;
+﻿using DestroyNobots.Engine.Entities.Vehicles.Peripherals;
 using FarseerPhysics;
 using FarseerPhysics.Collision.Shapes;
 using FarseerPhysics.Dynamics;
@@ -10,12 +8,12 @@ using System.Linq;
 
 namespace DestroyNobots.Engine.Entities.Vehicles
 {
-    public class Buggy : Vehicle
+    public class Tank : Vehicle
     {
         private EngineController EngineController { get; set; }
         public override Rectangle BoundingRectangle { get { return new Rectangle(Transform.Position.ToPoint(), new Point(32, 32)); } }
 
-        public Buggy()
+        public Tank()
         {
             EngineController = new EngineController(this);
             Computer.ConnectPeripheral(EngineController);
@@ -39,32 +37,32 @@ namespace DestroyNobots.Engine.Entities.Vehicles
 
         public override void Draw(GameTime gt)
         {
-			base.Draw(gt);
-			
-            Game.SpriteBatch.Draw(
-				Game.TextureManager.BuggyTexture, 
-				Transform.Position, 
-				null, 
-				Color.White, 
-				Transform.Rotation, 
-				Transform.Origin, 
-                Transform.Scale,
-				Transform.Effect, 
-				Transform.Depth
-			);
+            base.Draw(gt);
 
             Game.SpriteBatch.Draw(
-                Game.BlankTexture, 
-                new Rectangle(ConvertUnits.ToDisplayUnits(GetLeftTrackForcePoint()).ToPoint() - new Point(5, 5), new Point(10, 10)), 
-                null, 
-                Color.Red, 
+                Game.TextureManager.BuggyTexture,
+                Transform.Position,
+                null,
+                Color.White,
+                Transform.Rotation,
+                Transform.Origin,
+                Transform.Scale,
+                Transform.Effect,
+                Transform.Depth
+            );
+
+            Game.SpriteBatch.Draw(
+                Game.BlankTexture,
+                new Rectangle(ConvertUnits.ToDisplayUnits(GetLeftTrackForcePoint()).ToPoint() - new Point(5, 5), new Point(10, 10)),
+                null,
+                Color.Red,
                 0f,
-                Vector2.Zero, 
-                Transform.Effect, 
+                Vector2.Zero,
+                Transform.Effect,
                 0f);
 
             Game.SpriteBatch.Draw(
-                Game.BlankTexture, 
+                Game.BlankTexture,
                 new Rectangle(ConvertUnits.ToDisplayUnits(GetRightTrackForcePoint()).ToPoint() - new Point(5, 5), new Point(10, 10)),
                 null,
                 Color.Blue,

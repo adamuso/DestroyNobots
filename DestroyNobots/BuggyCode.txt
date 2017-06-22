@@ -7,25 +7,21 @@ mov addr[r1], int1
 mov r1, lidt_ptrs
 lidt r1
 
-mov r1, 1
-mov r2, 0
-div r1, r2
-
 start:
 	mov r3, 1
+	mov r4, 1
+loop:
+	out 0x0, 0x80
 	out 0x0, r3
-	out 0x1, r3
-	jmp start
+	out 0x0, 0x81
+	out 0x0, r4
+	halt
+	jmp loop
 
 int0:
-	mov r3, 2
-	out 0x0, r3
-	jmp int0
-
+	halt
 int1:
-	mov r3, 1
-	out 0x0, r3
-	jmp int1
+	halt
 
 lidt_ptrs:
 	reserve 256, dword

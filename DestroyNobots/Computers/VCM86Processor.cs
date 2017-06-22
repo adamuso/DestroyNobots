@@ -85,6 +85,7 @@ namespace DestroyNobots.Computers
             compiler.SetInstruction("lidt", 0xD, 1, AssemblerParameters.Register);
             compiler.SetInstruction("call", 0x24, 1,  AssemblerParameters.Address);
             compiler.SetInstruction("ret", 0x25, 1,  AssemblerParameters.Value);
+            compiler.SetInstruction("halt", 0x26, 0);
             compiler.SetInstruction("int", 0x31, 1,  AssemblerParameters.Register);
             #endregion
 

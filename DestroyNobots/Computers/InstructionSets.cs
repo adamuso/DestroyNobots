@@ -406,7 +406,7 @@ namespace DestroyNobots.Computers
 
             { 0x26, new AssemblerInstruction("halt", (instruction, context, parameters) =>
                 {
-                    var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
                     processor.Abort();
                 }
             )},
