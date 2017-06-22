@@ -49,6 +49,10 @@
     <Compile Include="Engine\DetailedTile.cs" />
     <Compile Include="Engine\Entities\Buildings\Radar.cs" />
     <Compile Include="Engine\Entities\EntityRenderer.cs" />
+    <Compile Include="Engine\Entities\Projectiles\Projectile.cs" />
+    <Compile Include="Engine\Entities\Projectiles\Shell.cs" />
+    <Compile Include="Engine\Entities\Vehicles\Tank.cs" />
+    <Compile Include="Engine\Entities\Vehicles\Peripherals\EngineController.cs" />
     <Compile Include="Engine\Polygon.cs" />
     <Compile Include="Engine\Projection.cs" />
     <Compile Include="Engine\Transform.cs" />

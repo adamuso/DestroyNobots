@@ -53,7 +53,7 @@ namespace DestroyNobots
             if (currentScreen != null)
             {
                 currentScreen.Game = this;
-                currentScreen.Load();
+                currentScreen.Initialize();
             }
         }
 

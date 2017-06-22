@@ -12,7 +12,7 @@ namespace DestroyNobots.Screens
        
         }
 
-        public virtual void Load()
+        public virtual void Initialize()
         {
 
         }
