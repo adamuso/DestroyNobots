@@ -51,7 +51,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AssemblerInstruction_Template.tt</DependentUpon>
     </Compile>
+    <Compile Include="Emulator\Coprocessor.cs" />
     <Compile Include="Emulator\Registers\IStackPointer.cs" />
+    <Compile Include="Emulator\Registers\RegisterProxy.cs" />
     <Compile Include="ImmediateValue.cs" />
     <Compile Include="BinaryMultiplier.cs" />
     <Compile Include="Emulator\Computer.cs" />

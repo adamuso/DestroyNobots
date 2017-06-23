@@ -507,6 +507,124 @@ namespace DestroyNobots.Computers
                 }
             )},
             #endregion
+
+            #region Float-point operations
+            { 0x80, new AssemblerInstruction<ImmediateValue>("fld", (instruction, context, value) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(value.ToDouble(null));
+                }
+            )},
+            { 0x81, new AssemblerInstruction<IRegister>("fld", (instruction, context, register) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(register.Value.ToDouble(null));
+                }
+            )},
+            { 0x82, new AssemblerInstruction<IRegister>("fst", (instruction, context, register) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    if(register is Register<double>)
+                        ((Register<double>)register).Value = processor.FPURegisters[0].Value;
+                    else
+                        ((Register<int>)register).Value = (int)processor.FPURegisters[0].Value;
+                }
+            )},
+            { 0x83, new AssemblerInstruction<IPointer>("fst", (instruction, context, pointer) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    if(pointer.Size == 4)
+                        pointer.As<float>().SetValue((float)processor.FPURegisters[0].Value);
+                    else if(pointer.Size == 8)
+                        pointer.As<double>().SetValue(processor.FPURegisters[0].Value);
+                }
+            )},
+            { 0x84, new AssemblerInstruction("fadd", (instruction, context, parameters) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(processor.Coprocessor.Pop() + processor.Coprocessor.Pop());
+                }
+            )},
+            { 0x85, new AssemblerInstruction<ImmediateValue>("fadd", (instruction, context, value) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(processor.Coprocessor.Pop() + value.ToDouble(null));
+                }
+            )},
+            { 0x86, new AssemblerInstruction("fsub", (instruction, context, parameters) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(processor.Coprocessor.Pop() - processor.Coprocessor.Pop());
+                }
+            )},
+            { 0x87, new AssemblerInstruction<ImmediateValue>("fsub", (instruction, context, value) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(processor.Coprocessor.Pop() - value.ToDouble(null));
+                }
+            )},
+            { 0x88, new AssemblerInstruction("fmul", (instruction, context, parameters) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(processor.Coprocessor.Pop() * processor.Coprocessor.Pop());
+                }
+            )},
+            { 0x89, new AssemblerInstruction<ImmediateValue>("fmul", (instruction, context, value) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(processor.Coprocessor.Pop() * value.ToDouble(null));
+                }
+            )},
+            { 0x8A, new AssemblerInstruction("fdiv", (instruction, context, parameters) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(processor.Coprocessor.Pop() / processor.Coprocessor.Pop());
+                }
+            )},
+            { 0x8B, new AssemblerInstruction<ImmediateValue>("fdiv", (instruction, context, value) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(processor.Coprocessor.Pop() / value.ToDouble(null));
+                }
+            )},
+            { 0x8C, new AssemblerInstruction<IPointer>("fld", (instruction, context, pointer) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    if(pointer.Size == 4)
+                        processor.Coprocessor.Push(pointer.As<float>().GetValue());
+                    else if(pointer.Size == 8)
+                        processor.Coprocessor.Push(pointer.As<double>().GetValue());
+                }
+            )},
+            { 0x8D, new AssemblerInstruction<IPointer>("fild", (instruction, context, pointer) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    if(pointer.Size == 1)
+                        processor.Coprocessor.Push(pointer.As<byte>().GetValue());
+                    else if(pointer.Size == 2)
+                        processor.Coprocessor.Push(pointer.As<short>().GetValue());
+                    else if(pointer.Size == 4)
+                        processor.Coprocessor.Push(pointer.As<int>().GetValue());
+                    else if(pointer.Size == 8)
+                        processor.Coprocessor.Push(pointer.As<long>().GetValue());
+                }
+            )},
+
+            #endregion
         };
     }
 }

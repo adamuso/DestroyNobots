@@ -9,7 +9,7 @@ lidt r1
 
 start:
 	mov r3, 1
-	mov r4, 1
+	mov r4, 2
 loop:
 	out 0x0, 0x80
 	out 0x0, r3
