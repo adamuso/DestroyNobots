@@ -87,7 +87,7 @@ namespace DestroyNobots.Assembler
                     reader.ReadChar();
 
                 string instruction = "";
-                skipSpaces(stream);
+                SkipSpaces(stream);
 
                 if (reader.BaseStream.Length == reader.BaseStream.Position)
                     break;
@@ -103,7 +103,7 @@ namespace DestroyNobots.Assembler
 
                 if (instruction.EndsWith(":"))
                 {
-                    string label = instruction.Substring(0, instruction.Length - 1).ToLower();
+                    string label = instruction.Substring(0, instruction.Length - 1);
 
                     if (!instructions.ContainsKey(label) && !constants.ContainsKey(label) && !registers.ContainsKey(label))
                     {
@@ -118,20 +118,20 @@ namespace DestroyNobots.Assembler
                 #region Reserve
                 if (instruction.ToLower() == "reserve")
                 {
-                    skipSpaces(stream);
+                    SkipSpaces(stream);
 
                     int size;
                     if (!readIntValue(stream, reader, out size))
                         throw new Exception("Expected size!");
 
-                    skipSpaces(stream);
+                    SkipSpaces(stream);
 
                     if ((char)reader.PeekChar() == ',')
                         reader.ReadChar();
                     else
                         throw new Exception("Expected ','!");
 
-                    skipSpaces(stream);
+                    SkipSpaces(stream);
 
                     int mult = 0;
                     if (!readIntValue(stream, reader, out mult))
@@ -155,7 +155,7 @@ namespace DestroyNobots.Assembler
                         if ((char)reader.PeekChar() == ',')
                             reader.ReadChar();
 
-                        skipSpaces(stream);
+                        SkipSpaces(stream);
 
                         if ((char)reader.PeekChar() == '[')
                         {
@@ -168,7 +168,7 @@ namespace DestroyNobots.Assembler
                                 throw new Exception("Expected ']'");
                         }
 
-                        skipSpaces(stream);
+                        SkipSpaces(stream);
 
                         if (char.IsLetter((char)reader.PeekChar()) || (char)reader.PeekChar() == '_')
                         {
@@ -199,7 +199,7 @@ namespace DestroyNobots.Assembler
                         if ((char)reader.PeekChar() == '"')
                         {
                             string lit = readStringLiteral(stream, reader);
-                            byte[] bytes = ASCIIEncoding.ASCII.GetBytes(lit);
+                            byte[] bytes = Encoding.ASCII.GetBytes(lit);
 
                             address += bytes.Length;
                         }
@@ -207,12 +207,12 @@ namespace DestroyNobots.Assembler
                         if ((char)reader.PeekChar() == '\'')
                         {
                             char lit = readCharLiteral(stream, reader);
-                            byte[] bytes = ASCIIEncoding.ASCII.GetBytes("" + lit);
+                            byte[] bytes = Encoding.ASCII.GetBytes("" + lit);
 
                             address += bytes.Length;
                         }
 
-                        skipSpaces(stream);
+                        SkipSpaces(stream);
                     }
                     while ((char)reader.PeekChar() == ',');
 
@@ -234,7 +234,7 @@ namespace DestroyNobots.Assembler
 
                 for (int i = 0; i < parnum; i++)
                 {
-                    skipSpaces(stream);
+                    SkipSpaces(stream);
 
                     bool pointer = false;
 
@@ -252,7 +252,7 @@ namespace DestroyNobots.Assembler
 
                         if (!pointer && reg.ToLower() == "byte" || reg.ToLower() == "word" || reg.ToLower() == "dword" || reg.ToLower() == "addr" || reg.ToLower() == "qword")
                         {
-                            skipSpaces(stream);
+                            SkipSpaces(stream);
 
                             if ((char)reader.PeekChar() == '[')
                             {
@@ -282,7 +282,7 @@ namespace DestroyNobots.Assembler
                         else
                             throw new Exception("Undefined identifier: " + reg);
                     }
-                    else if (char.IsDigit((char)reader.PeekChar()))
+                    else if (char.IsDigit((char)reader.PeekChar()) || (char)reader.PeekChar() == '-')
                     {
                         // parameter is value/number
 
@@ -298,7 +298,7 @@ namespace DestroyNobots.Assembler
                             throw new Exception("Expected ']'!");
                     }
 
-                    skipSpaces(stream);
+                    SkipSpaces(stream);
 
                     if ((char)reader.PeekChar() == ',')
                         reader.ReadChar();
@@ -392,7 +392,7 @@ namespace DestroyNobots.Assembler
             while (reader.BaseStream.Length != reader.BaseStream.Position)
             {
                 string instruction = "";
-                skipSpaces(stream);
+                SkipSpaces(stream);
 
                 if (reader.BaseStream.Length == reader.BaseStream.Position)
                     break;
@@ -403,7 +403,7 @@ namespace DestroyNobots.Assembler
                         instruction += reader.ReadChar();
                     }
 
-                while ((char)reader.PeekChar() == ',' || char.IsDigit((char)reader.PeekChar()) || (char)reader.PeekChar() == '[' || (char)reader.PeekChar() == ']')
+                while ((char)reader.PeekChar() == ',' || char.IsDigit((char)reader.PeekChar()) || (char)reader.PeekChar() == '[' || (char)reader.PeekChar() == ']' || (char)reader.PeekChar() == '-')
                     reader.ReadChar();
 
                 if ((char)reader.PeekChar() == '"')
@@ -423,7 +423,7 @@ namespace DestroyNobots.Assembler
 
                 if (instruction.EndsWith(":"))
                 {
-                    string label = instruction.Substring(0, instruction.Length - 1).ToLower();
+                    string label = instruction.Substring(0, instruction.Length - 1);
 
                     if (!instructions.ContainsKey(label) && !constants.ContainsKey(label) && !registers.ContainsKey(label))
                     {
@@ -462,7 +462,7 @@ namespace DestroyNobots.Assembler
                     reader.ReadChar();
 
                 string instruction = "";
-                skipSpaces(stream);
+                SkipSpaces(stream);
 
                 if (reader.BaseStream.Length == reader.BaseStream.Position)
                     break;
@@ -482,20 +482,20 @@ namespace DestroyNobots.Assembler
                 #region Reserve
                 if (instruction.ToLower() == "reserve")
                 {
-                    skipSpaces(stream);
+                    SkipSpaces(stream);
 
                     int size;
                     if (!readIntValue(stream, reader, out size))
                         throw new Exception("Expected size!");
 
-                    skipSpaces(stream);
+                    SkipSpaces(stream);
 
                     if ((char)reader.PeekChar() == ',')
                         reader.ReadChar();
                     else
                         throw new Exception("Expected ','!");
 
-                    skipSpaces(stream);
+                    SkipSpaces(stream);
 
                     int mult = 0;
                     if (!readIntValue(stream, reader, out mult))
@@ -520,7 +520,7 @@ namespace DestroyNobots.Assembler
                         if ((char)reader.PeekChar() == ',')
                             reader.ReadChar();
 
-                        skipSpaces(stream);
+                        SkipSpaces(stream);
 
                         if ((char)reader.PeekChar() == '[')
                         {
@@ -533,7 +533,7 @@ namespace DestroyNobots.Assembler
                                 throw new Exception("Expected ']'");
                         }
 
-                        skipSpaces(stream);
+                        SkipSpaces(stream);
 
                         if (char.IsLetter((char)reader.PeekChar()) || (char)reader.PeekChar() == '_')
                         {
@@ -596,7 +596,7 @@ namespace DestroyNobots.Assembler
                             address += bytes.Length;
                         }
 
-                        skipSpaces(stream);
+                        SkipSpaces(stream);
                     }
                     while ((char)reader.PeekChar() == ',');
 
@@ -615,7 +615,7 @@ namespace DestroyNobots.Assembler
 
                 for (int i = 0; i < parnum; i++)
                 {
-                    skipSpaces(stream);
+                    SkipSpaces(stream);
 
                     bool pointer = false;
 
@@ -634,7 +634,7 @@ namespace DestroyNobots.Assembler
 
                         if(!pointer && reg.ToLower() == "byte" || reg.ToLower() == "word" || reg.ToLower() == "dword" || reg.ToLower() == "addr" || reg.ToLower() == "qword")
                         {
-                            skipSpaces(stream);
+                            SkipSpaces(stream);
 
                             if ((char)reader.PeekChar() == '[')
                             {
@@ -675,7 +675,7 @@ namespace DestroyNobots.Assembler
                         else
                             throw new Exception("Undefined identifier: " + reg);
                     }
-                    else if (char.IsDigit((char)reader.PeekChar()))
+                    else if (char.IsDigit((char)reader.PeekChar()) || (char)reader.PeekChar() == '-')
                     {
                         // parameter is value/number
 
@@ -691,7 +691,7 @@ namespace DestroyNobots.Assembler
                             throw new Exception("Expected ']'!");
                     }
 
-                    skipSpaces(stream);
+                    SkipSpaces(stream);
 
                     if ((char)reader.PeekChar() == ',')
                         reader.ReadChar();
@@ -842,12 +842,12 @@ namespace DestroyNobots.Assembler
 
         private bool readIntValue(System.IO.Stream stream, System.IO.BinaryReader reader, ref int address, out int value)
         {
-            skipSpaces(stream);
+            SkipSpaces(stream);
 
             if (char.IsLetter((char)reader.PeekChar()) || (char)reader.PeekChar() == '_')
             {
                 string reg = readIdentifier(stream, reader);
-                skipSpaces(stream);
+                SkipSpaces(stream);
 
                 if (constants.ContainsKey(reg))
                 {
@@ -870,7 +870,7 @@ namespace DestroyNobots.Assembler
             if (char.IsDigit((char)reader.PeekChar()))
             {
                 int val = readIntLiteral(stream, reader);
-                skipSpaces(stream);
+                SkipSpaces(stream);
 
                 if (val < byte.MaxValue)
                 {
@@ -902,14 +902,14 @@ namespace DestroyNobots.Assembler
         {
             string str = "";
 
-            skipSpaces(stream);
+            SkipSpaces(stream);
 
             while (char.IsLetterOrDigit((char)reader.PeekChar()) || (char)reader.PeekChar() == '_')
             {
                 str += (char)stream.ReadByte();
             }
 
-            skipSpaces(stream);
+            SkipSpaces(stream);
 
             return str;
         }
@@ -918,7 +918,7 @@ namespace DestroyNobots.Assembler
         {
             string str = "";
 
-            skipSpaces(stream);
+            SkipSpaces(stream);
 
             if ((char)reader.PeekChar() == '"')
                 reader.ReadChar();
@@ -931,7 +931,7 @@ namespace DestroyNobots.Assembler
             if ((char)reader.PeekChar() == '"')
                 reader.ReadChar();
 
-            skipSpaces(stream);
+            SkipSpaces(stream);
 
             return str;
         }
@@ -940,7 +940,7 @@ namespace DestroyNobots.Assembler
         {
             char c = '\0';
 
-            skipSpaces(stream);
+            SkipSpaces(stream);
 
             if ((char)reader.PeekChar() == '\'')
                 reader.ReadChar();
@@ -950,7 +950,7 @@ namespace DestroyNobots.Assembler
             if ((char)reader.PeekChar() == '\'')
                 reader.ReadChar();
 
-            skipSpaces(stream);
+            SkipSpaces(stream);
 
             return c;
         }
@@ -961,14 +961,14 @@ namespace DestroyNobots.Assembler
 
             string val = "";
 
-            skipSpaces(stream);
+            SkipSpaces(stream);
 
-            while (char.IsDigit((char)reader.PeekChar()) || (char)reader.PeekChar() == 'x' || (char)reader.PeekChar() == 'b')
+            while (char.IsDigit((char)reader.PeekChar()) || (char)reader.PeekChar() == 'x' || (char)reader.PeekChar() == 'b' || (char)reader.PeekChar() == '-')
             {
                 val += (char)stream.ReadByte();
             }
 
-            skipSpaces(stream);
+            SkipSpaces(stream);
 
             if (val.StartsWith("0x"))
                 return Convert.ToInt32(val, 16);
@@ -980,7 +980,7 @@ namespace DestroyNobots.Assembler
         }
         #endregion
 
-        private void skipSpaces(System.IO.Stream stream)
+        private void SkipSpaces(System.IO.Stream stream)
         {
             char space = (char)stream.ReadByte();
             while (Char.IsWhiteSpace(space))

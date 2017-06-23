@@ -36,7 +36,7 @@ namespace DestroyNobots.Assembler.Emulator
 
         public Register<double> GetRegister(int index)
         {
-            return new RegisterProxy<double>() { Get = () => stack[(index + stackTop) % 8], Set = (value) => stack[(index + stackTop) % 8] = value };
+            return new RegisterProxy<double>() { Get = () => stack[(stackTop - index - 1) % 8], Set = (value) => stack[(stackTop - index - 1) % 8] = value };
         }
     }
 }

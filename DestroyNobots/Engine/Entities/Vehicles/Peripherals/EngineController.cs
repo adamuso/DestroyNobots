@@ -49,18 +49,16 @@ namespace DestroyNobots.Engine.Entities.Vehicles.Peripherals
                     else
                     {
                         if(!wheelsSideFlag)
-                            LeftWheelsForce = value;
+                            LeftWheelsForce = value / 100.0f;
                         else
-                            RightWheelsForce = value;
+                            RightWheelsForce = value / 100.0f;
 
                         wheelsMode = false;
                     }
                 },
                 In = (size) =>
                 {
-
-
-                    return 0;
+                    return BitConverter.ToInt32(BitConverter.GetBytes(DrivenDistance), 0);
                 }
             };
 

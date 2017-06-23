@@ -78,6 +78,8 @@ namespace DestroyNobots.Engine.Entities.Vehicles
         {
             base.Update(gt);
 
+            EngineController.Update(gt);
+
             Transform.Position = ConvertUnits.ToDisplayUnits(Body.Position);
             Transform.Rotation = Body.Rotation;
 

@@ -20,7 +20,7 @@ namespace DestroyNobots.Computers
             Coprocessor = new Coprocessor();
 
             for (byte i = RegistersCount; i < RegistersCount + 8; i++)
-                RegistersContainer.Add(i, Coprocessor.GetRegister(i));    
+                RegistersContainer.Add(i, Coprocessor.GetRegister(i - 10));    
         }
 
         protected override void InitializeComponents()
@@ -114,6 +114,15 @@ namespace DestroyNobots.Computers
             compiler.SetInstruction("in", 0x34, 2, AssemblerParameters.Value, AssemblerParameters.Register);
             #endregion
 
+            #region Float-point operations
+            compiler.SetInstruction("fadd", 0x84, 0);
+            compiler.SetInstruction("fsub", 0x86, 0);
+            compiler.SetInstruction("fmul", 0x88, 0);
+            compiler.SetInstruction("fdiv", 0x8A, 0);
+            compiler.SetInstruction("fcmp", 0x8E, 0);
+            compiler.SetInstruction("fdst", 0x90, 0);
+            #endregion
+
             for (byte i = 0; i < RegistersCount - 2; i++)
                 compiler.SetRegister("r" + (i + 1), i);
 
@@ -121,7 +130,7 @@ namespace DestroyNobots.Computers
             compiler.SetRegister("pc", ProgramCountRegisterNumber);
 
             for (byte i = RegistersCount; i < RegistersCount + 8; i++)
-                compiler.SetRegister("f" + (i + 1), i);
+                compiler.SetRegister("f" + (i - 10 + 1), i);
 
             compiler.SetConstant("qword", 8);
             compiler.SetConstant("dword", 4);
