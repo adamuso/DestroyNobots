@@ -38,7 +38,7 @@ namespace DestroyNobots.Engine.Entities.Vehicles.Peripherals
                         if ((value & 0x80) != 0)
                         {
                             wheelsMode = true;
-                            value = value & (~0x80);
+                            value = value & 0x7F;
                         }
 
                         if (value == 0)

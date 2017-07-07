@@ -186,11 +186,11 @@ namespace DestroyNobots.Assembler
                         {
                             int val = readIntLiteral(stream, reader);
 
-                            if ((val < byte.MaxValue && size == 0) || size == 1)
+                            if (((val < byte.MaxValue && val > sbyte.MinValue) && size == 0) || size == 1)
                                 address += 1;
-                            else if ((val < short.MaxValue && size == 0) || size == 2)
+                            else if (((val < ushort.MaxValue && val > short.MinValue) && size == 0) || size == 2)
                                 address += 2;
-                            else if ((val < int.MaxValue && size == 0) || size == 4)
+                            else if (((val < int.MaxValue && val > int.MinValue) && size == 0) || size == 4)
                                 address += 4;
                             else
                                 throw new Exception("Too big number!");
@@ -361,9 +361,9 @@ namespace DestroyNobots.Assembler
                         }
                         else
                         {
-                            if (args[i] < byte.MaxValue)
+                            if (args[i] < byte.MaxValue && args[i] > sbyte.MinValue)
                                 address += 1;
-                            else if (args[i] < short.MaxValue)
+                            else if (args[i] < ushort.MaxValue && args[i] > short.MinValue)
                                 address += 2;
                             else
                                 address += 4;
@@ -559,17 +559,17 @@ namespace DestroyNobots.Assembler
                         {
                             int val = readIntLiteral(stream, reader);
 
-                            if ((val < byte.MaxValue && size == 0) || size == 1)
+                            if (((val < byte.MaxValue && val > sbyte.MinValue) && size == 0) || size == 1)
                             {
                                 writer.Write((byte)val);
                                 address += 1;
                             }
-                            else if ((val < short.MaxValue && size == 0) || size == 2)
+                            else if (((val < ushort.MaxValue && val > short.MinValue) && size == 0) || size == 2)
                             {
                                 writer.Write((short)val);
                                 address += 2;
                             }
-                            else if ((val < int.MaxValue && size == 0) || size == 4)
+                            else if (((val < int.MaxValue && val > int.MinValue) && size == 0) || size == 4)
                             {
                                 writer.Write(val);
                                 address += 4;
@@ -731,12 +731,12 @@ namespace DestroyNobots.Assembler
                         }
                         else
                         {
-                            if (arg < byte.MaxValue)
+                            if (arg < byte.MaxValue && arg > sbyte.MinValue)
                             {
                                 writer.Write((byte)arg);
                                 address += 1;
                             }
-                            else if (arg < short.MaxValue)
+                            else if (arg < ushort.MaxValue && arg > short.MinValue)
                             {
                                 writer.Write((short)arg);
                                 address += 2;
@@ -803,9 +803,9 @@ namespace DestroyNobots.Assembler
                     }
                     else
                     {
-                        if (arg < byte.MaxValue)
+                        if (arg < byte.MaxValue && arg > sbyte.MinValue)
                             paramstypes |= (byte)(0x00 << (i * 2));
-                        else if (arg < short.MaxValue)
+                        else if (arg < ushort.MaxValue && arg > short.MinValue)
                             paramstypes |= (byte)(0x01 << (i * 2));
                         else
                             paramstypes |= (byte)(0x02 << (i * 2));
@@ -872,19 +872,19 @@ namespace DestroyNobots.Assembler
                 int val = readIntLiteral(stream, reader);
                 SkipSpaces(stream);
 
-                if (val < byte.MaxValue)
+                if (val < byte.MaxValue && val > sbyte.MinValue)
                 {
                     address += 1;
                     value = (byte)val;
                     return true;
                 }
-                else if (val < short.MaxValue)
+                else if (val < ushort.MaxValue && val > short.MinValue)
                 {
                     address += 2;
                     value = (short)val;
                     return true;
                 }
-                else if (val < int.MaxValue)
+                else if (val < int.MaxValue && int.MinValue < val)
                 {
                     address += 4;
                     value = val;

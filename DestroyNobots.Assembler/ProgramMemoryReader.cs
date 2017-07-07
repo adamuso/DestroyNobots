@@ -33,7 +33,7 @@ namespace DestroyNobots.Assembler
 
             if (pt == 0x00)
             {
-                output = memory.Read<byte>(mem);
+                output = memory.Read<sbyte>(mem);
                 mem++;
             }
             else if (pt == 0x01)

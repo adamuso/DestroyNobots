@@ -1,11 +1,13 @@
-﻿mov r1, lidt_ptrs
-mov addr[lidt_ptrs], int0
-mov r2, addr[lidt_ptrs]
-mov addr[r1], r2
-add r1, 4
-mov addr[r1], int1
-mov r1, lidt_ptrs
-lidt r1
+﻿boot:
+	// load interupts addresses into idt
+	mov r1, lidt_ptrs
+	mov addr[r1], int0
+	add r1, 4
+	mov addr[r1], int1
+
+	// load idt address into processor
+	mov r1, lidt_ptrs
+	lidt r1
 
 start:
 	fld 5
@@ -45,8 +47,8 @@ right:
 	fadd 5
 	fld 0
 	mov r1, 1
-	mov r3, 1000
-	mov r4, -1000
+	mov r3, 100
+	mov r4, -100
 	out 0x0, 0x80
 	out 0x0, r3
 	out 0x0, 0x81
