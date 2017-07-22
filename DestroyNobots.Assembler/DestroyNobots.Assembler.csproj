@@ -51,7 +51,9 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AssemblerInstruction_Template.tt</DependentUpon>
     </Compile>
+    <Compile Include="Emulator\Coprocessor.cs" />
     <Compile Include="Emulator\Registers\IStackPointer.cs" />
+    <Compile Include="Emulator\Registers\RegisterProxy.cs" />
     <Compile Include="ImmediateValue.cs" />
     <Compile Include="BinaryMultiplier.cs" />
     <Compile Include="Emulator\Computer.cs" />
@@ -88,9 +90,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="AsmTest.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="AssemblerInstruction_Template.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>AssemblerInstruction_Template.cs</LastGenOutput>

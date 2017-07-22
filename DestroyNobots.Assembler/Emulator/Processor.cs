@@ -2,6 +2,7 @@
 using DestroyNobots.Assembler.Parser;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace DestroyNobots.Assembler.Emulator
 {
@@ -18,13 +19,14 @@ namespace DestroyNobots.Assembler.Emulator
         int stackMemory;
         int stackSize;
         private ProgramMemoryReader<T> programMemoryReader;
+        protected Dictionary<byte, IRegister> RegistersContainer { get; private set; }
 
         public Dictionary<byte, AssemblerInstruction> InstructionSet { get; private set; } // opcodes as keys
 
         public Pointer<Address> InterruptDescriptorTablePointer { get; set; }
 
-        IRegister[] IProcessorBase.Registers { get { return Registers; } }
-        public Register<T>[] Registers { get; private set; }
+        IReadOnlyDictionary<byte, IRegister> IProcessorBase.Registers { get { return RegistersContainer; } }
+        public IReadOnlyDictionary<byte, Register<T>> Registers { get; private set; }
         public ProgramCounter<uint> ProgramCounter { get; private set; }
         IStackPointer IProcessorBase.StackPointer { get { return StackPointer; } }
         public StackPointer StackPointer { get; private set; }
@@ -40,14 +42,14 @@ namespace DestroyNobots.Assembler.Emulator
         public Processor(Dictionary<byte, AssemblerInstruction> instructions)
         {
             this.Context = null;
-            Registers = new Register<T>[RegistersCount];
+            RegistersContainer = new Dictionary<byte, IRegister>(RegistersCount);
             InstructionSet = instructions;
 
             flags = 0;
             abort = false;
 
-            for (int r = 0; r < RegistersCount; r++)
-                Registers[r] = new Register<T>();
+            for (byte r = 0; r < RegistersCount; r++)
+                RegistersContainer.Add(r, new Register<T>());
 
             StackPointer = new StackPointer(this, new Register<uint>(), 0, 0);
             ProgramCounter = new ProgramCounter<uint>(this, new Register<uint>());
@@ -57,6 +59,15 @@ namespace DestroyNobots.Assembler.Emulator
         {
             InterruptDescriptorTablePointer = new Pointer<Address>(Context.Memory, Address.Null);
             programMemoryReader = new ProgramMemoryReader<T>(this, Context.Memory);
+
+            InitializeComponents();
+
+            Registers = RegistersContainer.Where(p => p.Value is Register<T>).ToDictionary(p => p.Key, p => (Register<T>)p.Value);
+        }
+
+        protected virtual void InitializeComponents()
+        {
+
         }
 
         public void Run()

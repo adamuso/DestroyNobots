@@ -6,7 +6,7 @@ namespace DestroyNobots.Assembler.Emulator.Registers
     {
         IConvertible IRegister.Value { get { return Value; } }
 
-        public T Value { get; set; }
+        public virtual T Value { get; set; }
 
         public byte Size { get { return (byte)System.Runtime.InteropServices.Marshal.SizeOf(typeof(T)); } }
 

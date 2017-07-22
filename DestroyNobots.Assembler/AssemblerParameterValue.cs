@@ -23,6 +23,11 @@
             return value.Value;
         }
 
+        public static implicit operator byte(AssemblerParameterValue value)
+        {
+            return (byte)value.Value;
+        }
+
         public static implicit operator Address(AssemblerParameterValue value)
         {
             return (Address)value.Value;

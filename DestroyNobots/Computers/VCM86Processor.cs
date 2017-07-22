@@ -1,7 +1,8 @@
-﻿using System;
-using DestroyNobots.Assembler;
+﻿using DestroyNobots.Assembler;
 using DestroyNobots.Assembler.Emulator;
-using DestroyNobots.Assembler.Parser;
+using System.Collections.Generic;
+using DestroyNobots.Assembler.Emulator.Registers;
+using System.Linq;
 
 namespace DestroyNobots.Computers
 {
@@ -10,11 +11,23 @@ namespace DestroyNobots.Computers
         public override byte ProgramCountRegisterNumber { get { return 9; } }
         public override byte RegistersCount { get { return 10; } }
         public override byte StackPointerRegisterNumber { get { return 8; } }
+        public Coprocessor Coprocessor { get; private set; }
+        public IReadOnlyDictionary<byte, Register<double>> FPURegisters { get; private set; }
 
         public VCM86Processor() 
             : base(InstructionSets.VCM86)
         {
+            Coprocessor = new Coprocessor();
 
+            for (byte i = RegistersCount; i < RegistersCount + 8; i++)
+                RegistersContainer.Add(i, Coprocessor.GetRegister(i - 10));    
+        }
+
+        protected override void InitializeComponents()
+        {
+            base.InitializeComponents();
+
+            FPURegisters = RegistersContainer.Where(p => p.Value is Register<double>).ToDictionary(p => p.Key, p => (Register<double>)p.Value);
         }
 
         public override void Update()
@@ -101,11 +114,23 @@ namespace DestroyNobots.Computers
             compiler.SetInstruction("in", 0x34, 2, AssemblerParameters.Value, AssemblerParameters.Register);
             #endregion
 
+            #region Float-point operations
+            compiler.SetInstruction("fadd", 0x84, 0);
+            compiler.SetInstruction("fsub", 0x86, 0);
+            compiler.SetInstruction("fmul", 0x88, 0);
+            compiler.SetInstruction("fdiv", 0x8A, 0);
+            compiler.SetInstruction("fcmp", 0x8E, 0);
+            compiler.SetInstruction("fdst", 0x90, 0);
+            #endregion
+
             for (byte i = 0; i < RegistersCount - 2; i++)
                 compiler.SetRegister("r" + (i + 1), i);
 
             compiler.SetRegister("sp", StackPointerRegisterNumber);
             compiler.SetRegister("pc", ProgramCountRegisterNumber);
+
+            for (byte i = RegistersCount; i < RegistersCount + 8; i++)
+                compiler.SetRegister("f" + (i - 10 + 1), i);
 
             compiler.SetConstant("qword", 8);
             compiler.SetConstant("dword", 4);

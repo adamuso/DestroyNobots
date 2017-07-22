@@ -1,4 +1,5 @@
 ﻿using DestroyNobots.Assembler.Emulator.Registers;
+using System.Collections.Generic;
 
 namespace DestroyNobots.Assembler.Emulator
 {
@@ -6,7 +7,7 @@ namespace DestroyNobots.Assembler.Emulator
     {
         bool Running { get; }
         IRuntimeContext Context { get; set; }
-        IRegister[] Registers { get; }
+        IReadOnlyDictionary<byte, IRegister> Registers { get; }
         IStackPointer StackPointer { get; }
         Pointer<Address> InterruptDescriptorTablePointer { get; }
 
