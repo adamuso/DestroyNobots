@@ -1,29 +1,30 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace DestroyNobots.Assembler
 {
     public class AssemblerOpcodeSet
     {
         IInstructionSetProvider instructionSetProvider;
-        List<byte> opcodes;
-        byte _default;
+        HashSet<byte> opcodes;
+        byte @default;
 
         public AssemblerOpcodeSet(IInstructionSetProvider instructionSetProvider)
         {
             this.instructionSetProvider = instructionSetProvider;
-            this.opcodes = new List<byte>();
+            this.opcodes = new HashSet<byte>();
         }
 
-        public void Add(byte opcode)
+        public bool Add(byte opcode)
         {
-            opcodes.Add(opcode);
+            return opcodes.Add(opcode);
         }
 
-        public byte Find(params Parser.AssemblerParameters[] parameters)
+        public byte Find(params AssemblerParameters[] parameters)
         {
-            for (int i = 0; i < opcodes.Count; i++)
+            foreach (byte opcode in opcodes)
             {
-                AssemblerInstruction ins = instructionSetProvider.InstructionSet[opcodes[i]];
+                AssemblerInstruction ins = instructionSetProvider.InstructionSet[opcode];
 
                 if (ins.ParametersCount != parameters.Length)
                     continue;
@@ -33,7 +34,7 @@ namespace DestroyNobots.Assembler
                 for (int j = 0; j < parameters.Length; j++)
                 {
                     // if parameter does not have pointer flag
-                    if ((parameters[j] & Parser.AssemblerParameters.POINTER) == 0)
+                    if ((parameters[j] & AssemblerParameters.Pointer) == 0)
                     {
                         if (parameters[j] != ins.Parameters[j])
                         {
@@ -43,25 +44,28 @@ namespace DestroyNobots.Assembler
                     }
                     else
                     {
-                        if (Parser.AssemblerParameters.POINTER != ins.Parameters[j])
-                        {
-                            found = false;
-                            break;
-                        }
+                        if ((parameters[j] & AssemblerParameters.Value) != 0 && (ins.Parameters[j] & AssemblerParameters.Value) != 0)
+                            continue;
+
+                        if (AssemblerParameters.Pointer == ins.Parameters[j] && (parameters[j] & AssemblerParameters.Value) == 0)
+                            continue;
+
+                        found = false;
+                        break;
                     }
                 }
 
                 if (!found)
                     continue;
                 else
-                    return opcodes[i];
+                    return opcode;
             }
 
             return 255;
         }
 
         public int Count { get { return opcodes.Count; } }
-        public List<byte> Opcodes { get { return opcodes; } }
-        public byte Default { get { return _default; } set { _default = value; } }
+        public IList<byte> Opcodes { get { return opcodes.ToList(); } }
+        public byte Default { get { return @default; } set { @default = value; } }
     }
 }

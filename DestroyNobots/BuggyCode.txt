@@ -1,5 +1,66 @@
-﻿mov r3, 0
+﻿boot:
+	// load interupts addresses into idt
+	mov r1, lidt_ptrs
+	mov addr[r1], int0
+	add r1, 4
+	mov addr[r1], int1
+
+	// load idt address into processor
+	mov r1, lidt_ptrs
+	lidt r1
 
 start:
-	inc r3
-	jmp start
+	fld 5
+	fld 0
+	mov r1, 0
+	mov r3, 50
+	mov r4, 100
+	out 0x0, 0x80
+	out 0x0, r3
+	out 0x0, 0x81
+	out 0x0, r4
+	jmp loop
+left:
+	fdst
+	fadd 20
+	fld 0
+	mov r1, 0
+	mov r3, 50
+	mov r4, 100
+	out 0x0, 0x80
+	out 0x0, r3
+	out 0x0, 0x81
+	out 0x0, r4
+loop:
+	in 0x0, r3
+	mov dword[floatTemp], r3
+	fmov f1, dword[floatTemp]
+	fcmp
+	jgr choose
+	jmp loop
+choose:
+	cmp r1, 0
+	je right
+	jne left
+right:
+	fdst
+	fadd 5
+	fld 0
+	mov r1, 1
+	mov r3, 100
+	mov r4, -100
+	out 0x0, 0x80
+	out 0x0, r3
+	out 0x0, 0x81
+	out 0x0, r4
+	jmp loop
+
+int0:
+	halt
+int1:
+	halt
+
+floatTemp:
+	reserve 1, dword
+lidt_ptrs:
+	reserve 256, dword

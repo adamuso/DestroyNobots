@@ -2,5 +2,6 @@
 {
     public enum ActionKey
     {
+        MultiSelect
     }
 }

@@ -46,14 +46,26 @@
   <ItemGroup>
     <Compile Include="AssemblerCompiler.cs" />
     <Compile Include="AssemblerInstruction.cs" />
+    <Compile Include="AssemblerInstruction_Template.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AssemblerInstruction_Template.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Emulator\Coprocessor.cs" />
+    <Compile Include="Emulator\Registers\IStackPointer.cs" />
+    <Compile Include="Emulator\Registers\RegisterProxy.cs" />
+    <Compile Include="ImmediateValue.cs" />
     <Compile Include="BinaryMultiplier.cs" />
-    <Compile Include="Computer.cs" />
     <Compile Include="Emulator\Computer.cs" />
+    <Compile Include="Emulator\InterruptSignal.cs" />
     <Compile Include="Emulator\IProcessorBase.cs" />
+    <Compile Include="Emulator\Peripherals\PeripheralPortHandler.cs" />
     <Compile Include="Emulator\RAMMemory.cs" />
+    <Compile Include="Emulator\Registers\IRegister.cs" />
     <Compile Include="Emulator\Registers\Register.cs" />
     <Compile Include="Emulator\Registers\StackPointer.cs" />
     <Compile Include="FlagType.cs" />
+    <Compile Include="IAssemblerInstructionParameter.cs" />
     <Compile Include="IInstructionSetProvider.cs" />
     <Compile Include="IMemory.cs" />
     <Compile Include="Emulator\Peripherals\HardDrive.cs" />
@@ -61,24 +73,26 @@
     <Compile Include="Emulator\Peripherals\Peripheral.cs" />
     <Compile Include="Emulator\Processor.cs" />
     <Compile Include="Emulator\Registers\ProgramCounter.cs" />
+    <Compile Include="IPointer.cs" />
     <Compile Include="IRuntimeContext.cs" />
+    <Compile Include="AssemblerParameterValue.cs" />
+    <Compile Include="Pointer.cs" />
+    <Compile Include="PointerType.cs" />
     <Compile Include="ProgramMemoryReader.cs" />
+    <Compile Include="RegisterType.cs" />
     <Compile Include="SafeMemory.cs" />
     <Compile Include="UnsafeHGlobalMemory.cs" />
-    <Compile Include="Parser\AssemblerInstruction.cs" />
     <Compile Include="AssemblerOpcodeSet.cs" />
-    <Compile Include="Parser\AssemblerParameters.cs" />
-    <Compile Include="Parser\AssemblerParser.cs" />
+    <Compile Include="AssemblerParameters.cs" />
     <Compile Include="Parser\MathParser.cs" />
-    <Compile Include="Pointer.cs" />
+    <Compile Include="Address.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Register.cs" />
-    <Compile Include="StandardComputer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="AsmTest.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="AssemblerInstruction_Template.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>AssemblerInstruction_Template.cs</LastGenOutput>
     </Content>
   </ItemGroup>
   <ItemGroup>
@@ -86,6 +100,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Compiler\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

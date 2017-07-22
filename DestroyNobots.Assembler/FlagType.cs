@@ -7,8 +7,9 @@ namespace DestroyNobots.Assembler
 {
     public enum FlagType : int
     {
-        ZERO = 0,
-        EQUAL = 1,
-        GREATER
+        Zero = 0,
+        Equal = 1,
+        Greater,
+        Carry
     }
 }

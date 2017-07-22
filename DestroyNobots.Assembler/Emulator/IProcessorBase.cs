@@ -1,13 +1,17 @@
-﻿using System;
+﻿using DestroyNobots.Assembler.Emulator.Registers;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DestroyNobots.Assembler.Emulator
 {
     public interface IProcessorBase
     {
+        bool Running { get; }
+        IRuntimeContext Context { get; set; }
+        IReadOnlyDictionary<byte, IRegister> Registers { get; }
+        IStackPointer StackPointer { get; }
+        Pointer<Address> InterruptDescriptorTablePointer { get; }
+
+        void Initialize();
         void Run();
         bool Step();
         void Pause();
@@ -16,7 +20,6 @@ namespace DestroyNobots.Assembler.Emulator
 
         AssemblerCompiler GetAssociatedCompiler();
 
-        bool Running { get; }
-        Computer Computer { get; set; }
+        void Interrupt(byte interrupt);
     }
 }

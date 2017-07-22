@@ -4,13 +4,15 @@ namespace DestroyNobots.Assembler.Emulator
 {
     internal class RAMMemory : IMemory
     {
+        private Computer computer;
         private IMemory internalMemory;
         private bool isPowered;
 
         public int MemorySize { get { return internalMemory.MemorySize; } }
 
-        public RAMMemory(IMemory internalMemory)
+        public RAMMemory(Computer computer, IMemory internalMemory)
         {
+            this.computer = computer;
             this.internalMemory = internalMemory;
         }
 
@@ -30,39 +32,68 @@ namespace DestroyNobots.Assembler.Emulator
             internalMemory.Dispose();
         }
 
-        public byte Read(Pointer address)
+        public byte Read(Address address)
         {
+            if(address.Value >= MemorySize)
+                computer.Processor.Interrupt(1);
+
             return internalMemory.Read(address);
         }
 
-        public byte[] Read(Pointer address, uint len)
+        public byte[] Read(Address address, uint len)
         {
+            if (address.Value >= MemorySize)
+                computer.Processor.Interrupt(1);
+
             return internalMemory.Read(address, len);
         }
 
-        public T1 Read<T1>(Pointer address) where T1 : struct
+        public T1 Read<T1>(Address address) where T1 : struct
         {
+            if (address.Value >= MemorySize)
+                computer.Processor.Interrupt(1);
+
             return internalMemory.Read<T1>(address);
         }
 
-        public void Write(Pointer address, byte[] values)
+        public T1 Read<T1>(Address address, out uint size) where T1 : struct
         {
+            if (address.Value >= MemorySize)
+                computer.Processor.Interrupt(1);
+
+            return internalMemory.Read<T1>(address, out size);
+        }
+
+        public void Write(Address address, byte[] values)
+        {
+            if (address.Value >= MemorySize)
+                computer.Processor.Interrupt(1);
+
             internalMemory.Write(address, values);
         }
 
-        public void Write(Pointer address, byte value)
+        public void Write(Address address, byte value)
         {
+            if (address.Value >= MemorySize)
+                computer.Processor.Interrupt(1);
+
             internalMemory.Write(address, value);
         }
 
-        public void Write(Pointer address, byte value, uint count)
+        public void Write(Address address, byte value, uint count)
         {
+            if (address.Value >= MemorySize)
+                computer.Processor.Interrupt(1);
+
             internalMemory.Write(address, value, count);
         }
 
-        public void Write<T1>(Pointer address, T1 value) where T1 : struct
+        public uint Write<T1>(Address address, T1 value) where T1 : struct
         {
-            internalMemory.Write(address, value);
+            if (address.Value >= MemorySize)
+                computer.Processor.Interrupt(1);
+
+            return internalMemory.Write(address, value);
         }
     }
 }

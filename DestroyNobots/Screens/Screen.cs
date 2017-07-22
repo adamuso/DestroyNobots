@@ -7,7 +7,12 @@ namespace DestroyNobots.Screens
     {
         public DestroyNobotsGame Game { get; set; }
 
-        public virtual void Load()
+        public Screen()
+        {
+       
+        }
+
+        public virtual void Initialize()
         {
 
         }

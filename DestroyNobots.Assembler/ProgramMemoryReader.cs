@@ -14,29 +14,26 @@ namespace DestroyNobots.Assembler
             this.memory = memory;
         }
 
-        public int ReadRegister(ref uint mem, byte pt)
+        public AssemblerParameterValue ReadRegister(ref uint mem, byte pt, bool pf)
         {
             int? output = null;
 
-            if (pt == 0x00)
-            {
-                output = memory.Read<byte>(mem);
-                mem++;
-            }
+            output = memory.Read<byte>(mem);
+            mem++;
 
             if(output == null)
                 throw new Exception();
 
-            return output.Value;
+            return new AssemblerParameterValue(output.Value, null, (RegisterType)(byte)(pt + (pf ? 0x04 : 0x00)));
         }
 
-        public int ReadValue(ref uint mem, byte pt)
+        public AssemblerParameterValue ReadValue(ref uint mem, byte pt, bool pf)
         {
             int? output = null;
 
             if (pt == 0x00)
             {
-                output = memory.Read<byte>(mem);
+                output = memory.Read<sbyte>(mem);
                 mem++;
             }
             else if (pt == 0x01)
@@ -56,25 +53,25 @@ namespace DestroyNobots.Assembler
             return output.Value;
         }
 
-        public int ReadPointer(ref uint mem, byte pt)
+        public AssemblerParameterValue ReadPointer(ref uint mem, byte pt, bool pf)
         {
             int? output = null;
 
-            if (pt == 0x00)
+            if (!pf)
             {
-                output = memory.Read<int>(mem);
+                output = memory.Read<int>(mem); // read address from parameter
                 mem += 4;
             }
-            else if (pt == 0x01)
-            {
-                output = processor.Registers[memory.Read<byte>(mem)].Value.ToInt32(null);
+            else
+            { 
+                output = processor.Registers[memory.Read<byte>(mem)].Value.ToInt32(null); // read address from register
                 mem += 1;
             }
 
             if (output == null)
                 throw new Exception();
 
-            return output.Value;
+            return new AssemblerParameterValue(output.Value, (PointerType)pt, null);
         }
     }
 }

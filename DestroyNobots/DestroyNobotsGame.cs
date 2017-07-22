@@ -1,7 +1,9 @@
 ﻿using DestroyNobots.Engine;
 using DestroyNobots.Engine.Entities;
 using DestroyNobots.Engine.Entities.Vehicles;
+using DestroyNobots.Engine.Input;
 using DestroyNobots.Screens;
+using FarseerPhysics.Dynamics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -16,11 +18,19 @@ namespace DestroyNobots
         GraphicsDeviceManager graphics;
         Screen currentScreen;
 
+        public Texture2D BlankTexture { get; private set; }
+
         public TimerManager TimerManager { get; private set; }
         public SpriteBatch SpriteBatch { get; private set; }
         public EntityManager EntityManager { get; private set; }
         public TextureManager TextureManager { get; private set; }
         public Camera Camera { get; private set; }
+        public Level Level { get; private set; }
+        public InputManager InputManager { get; private set; }
+
+        public World World { get; private set; }
+
+        public SpriteFont EditorFont { get; private set; }
 
         public DestroyNobotsGame()
         {
@@ -43,11 +53,11 @@ namespace DestroyNobots
             if (currentScreen != null)
             {
                 currentScreen.Game = this;
-                currentScreen.Load();
+                currentScreen.Initialize();
             }
         }
 
-        Buggy b;
+        public Buggy b;
 
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
@@ -59,12 +69,30 @@ namespace DestroyNobots
         {
             base.Initialize();
 
+            graphics.PreferredBackBufferWidth = 1280;
+            graphics.PreferredBackBufferHeight = 720;
+            graphics.ApplyChanges();
+
             IsFixedTimeStep = false;
             IsMouseVisible = true;
 
+            World = new World(Vector2.Zero);
+            FarseerPhysics.ConvertUnits.SetDisplayUnitToSimUnitRatio(64);
+
+            InputManager = new InputManager();
             TimerManager = new TimerManager();
             EntityManager = new EntityManager() { Game = this };
-            Camera = new Camera();
+            Camera = new Camera() { Game = this, SceneSize = new Point(1280, 720) };
+            Level = new Level(20, 20) { Game = this, TileSet = new TileSet(Content.Load<Texture2D>("ts"), 1024) };
+            Level[0, 0] = new Tile() { Type = 1 };
+            Level[1, 1] = new Tile() { Type = 2 };
+            Level[0, 1] = new Tile() { Type = 2 };
+            Level[1, 0] = new Tile() { Type = 2 };
+            Level[2, 0] = new Tile() { Type = 2 };
+            Level[0, 2] = new Tile() { Type = 1 };
+            Level[2, 1] = new Tile() { Type = 2 };
+            Level[1, 2] = new Tile() { Type = 1 };
+            Level[2, 2] = new Tile() { Type = 1 };
 
             Services.AddService(TimerManager);
             Services.AddService(EntityManager);
@@ -84,10 +112,15 @@ namespace DestroyNobots
         /// </summary>
         protected override void LoadContent()
         {
+            BlankTexture = new Texture2D(GraphicsDevice, 1, 1);
+            BlankTexture.SetData(new Color[] { Color.White });
+
             TextureManager = new TextureManager(this);
 
             SpriteBatch = new SpriteBatch(GraphicsDevice);
             TextureManager.Load();
+
+            EditorFont = Content.Load<SpriteFont>("EditorFont");
 
             SwitchScreen<GameScreen>();
         }
@@ -107,6 +140,9 @@ namespace DestroyNobots
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            World.Step(1 / 60.0f);
+
+            InputManager.Update(gameTime);
             b.Computer.Step();
             TimerManager.Update(gameTime);
             currentScreen.Update(gameTime);

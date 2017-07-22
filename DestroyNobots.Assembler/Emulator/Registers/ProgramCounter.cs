@@ -5,10 +5,12 @@ namespace DestroyNobots.Assembler.Emulator.Registers
     public class ProgramCounter<T>
         where T : struct, IConvertible
     {
-        private Processor<T> processor;
+        private IProcessorBase processor;
         private Register<T> register;
 
-        public ProgramCounter(Processor<T> processor, Register<T> register)
+        public Address Address { get { return register.Value.ToUInt32(null); } }
+
+        public ProgramCounter(IProcessorBase processor, Register<T> register)
         {
             this.processor = processor;
             this.register = register;
@@ -29,22 +31,28 @@ namespace DestroyNobots.Assembler.Emulator.Registers
             register.Value = (T)Convert.ChangeType(register.Value.ToUInt32(null) + address, typeof(T));
         }
 
-        public void Jump(Pointer address)
+        public void Jump(Address address)
         {
-            register.Value = (T)Convert.ChangeType(address, typeof(T));
+            register.Value = (T)Convert.ChangeType(address.Value, typeof(T));
         }
 
-        public void Call(Pointer address)
+        public void Call(Address address)
         {
             processor.StackPointer.Push(register.Value);
-            register.Value = (T)Convert.ChangeType(address, typeof(T));
+            register.Value = (T)Convert.ChangeType(address.Value, typeof(T));
+        }
+
+        public void CallInterrupt(byte interrupt)
+        {
+            if (processor.InterruptDescriptorTablePointer != null)
+            {
+                Call(processor.InterruptDescriptorTablePointer.GetValue(interrupt * 4));
+            }
         }
 
         public void Return()
         {
-            register.Value = processor.StackPointer.Pop();
+            register.Value = processor.StackPointer.Pop<T>();
         }
-
-        public uint Address { get { return register.Value.ToUInt32(null); } }
     }
 }

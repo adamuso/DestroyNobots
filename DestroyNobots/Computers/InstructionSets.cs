@@ -1,4 +1,7 @@
 ﻿using DestroyNobots.Assembler;
+using DestroyNobots.Assembler.Emulator;
+using DestroyNobots.Assembler.Emulator.Registers;
+using System;
 using System.Collections.Generic;
 
 namespace DestroyNobots.Computers
@@ -8,7 +11,7 @@ namespace DestroyNobots.Computers
         public readonly static Dictionary<byte, AssemblerInstruction> VCM86 = new Dictionary<byte, AssemblerInstruction>()
         {
             #region Basic arithmetic operations
-            { 0x1, new AssemblerInstruction((instruction, context, parameters) => // add (reg, reg)
+            { 0x1, new AssemblerInstruction("add", (instruction, context, parameters) => // add (reg, reg)
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
 
@@ -16,22 +19,22 @@ namespace DestroyNobots.Computers
                     int reg2 = processor.Registers[parameters[1]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 + reg2;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
-            { 0x2, new AssemblerInstruction((instruction, context, parameters) => // add (reg, val)
+            { 0x2, new AssemblerInstruction("add", (instruction, context, parameters) => // add (reg, val)
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
 
                     int reg1 = processor.Registers[parameters[0]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 + parameters[1];
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
-            { 0x3, new AssemblerInstruction((instruction, context, parameters) => // mov (reg, reg)
+            { 0x3, new AssemblerInstruction("mov", (instruction, context, parameters) => // mov (reg, reg)
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
 
@@ -39,7 +42,7 @@ namespace DestroyNobots.Computers
                 }
             )},
 
-            { 0x4, new AssemblerInstruction((instruction, context, parameters) => // sub (reg, reg)
+            { 0x4, new AssemblerInstruction("sub", (instruction, context, parameters) => // sub (reg, reg)
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
 
@@ -47,173 +50,179 @@ namespace DestroyNobots.Computers
                     int reg2 = processor.Registers[parameters[1]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 - reg2;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
-            { 0x5, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x5, new AssemblerInstruction("sub", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
 
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                     processor.Registers[parameters[0]].Value = reg1 - parameters[1];
                 }
             )},
 
-            { 0x6, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x6, new AssemblerInstruction("mov", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     processor.Registers[parameters[0]].Value = parameters[1];
                 }
             )},
 
-            { 0x7, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x7, new AssemblerInstruction("mul", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
                     int reg2 = processor.Registers[parameters[1]].Value;
 
-                    processor.Registers[parameters[0]].Value = reg1* reg2;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.Registers[parameters[0]].Value = reg1 * reg2;
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
-            { 0x8, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x8, new AssemblerInstruction("mul", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
 
-                    processor.Registers[parameters[0]].Value = reg1* parameters[1];
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.Registers[parameters[0]].Value = reg1 * parameters[1];
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
-            { 0x9, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x9, new AssemblerInstruction("div", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
                     int reg2 = processor.Registers[parameters[1]].Value;
+
+                    if(reg2 == 0)
+                    {
+                        processor.Interrupt(0);
+                        return;
+                    }
 
                     processor.Registers[parameters[0]].Value = reg1 / reg2;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
-            { 0xA, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0xA, new AssemblerInstruction("div", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 / parameters[1];
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
-            { 0x27, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x27, new AssemblerInstruction("mod", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 % parameters[1];
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
-            { 0x28, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x28, new AssemblerInstruction("mod", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 % processor.Registers[parameters[1]].Value;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
-            { 0x29, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x29, new AssemblerInstruction("inc", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     processor.Registers[parameters[0]].Value++;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
-            { 0x2A, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x2A, new AssemblerInstruction("dec", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     processor.Registers[parameters[0]].Value--;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
             #endregion
 
             #region Bit operations
 
-            { 0xB, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0xB, new AssemblerInstruction("or", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
                     int reg2 = processor.Registers[parameters[1]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 | reg2;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
-            { 0xC, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0xC, new AssemblerInstruction("or", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 | parameters[1];
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
-            { 0xE, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0xE, new AssemblerInstruction("and", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
                     int reg2 = processor.Registers[parameters[1]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 & reg2;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
-            { 0xF, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0xF, new AssemblerInstruction("and", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 & parameters[1];
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
 
-            { 0x10, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x10, new AssemblerInstruction("xor", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
                     int reg2 = processor.Registers[parameters[1]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 ^ reg2;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
-            { 0x11, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x11, new AssemblerInstruction("xor", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 ^ parameters[1];
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
-            { 0x12, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x12, new AssemblerInstruction("not", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
@@ -222,188 +231,194 @@ namespace DestroyNobots.Computers
                 }
             )},
 
-            { 0x13, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x13, new AssemblerInstruction("shr", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
                     int reg2 = processor.Registers[parameters[1]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 >> reg2;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
-            { 0x14, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x14, new AssemblerInstruction("shl", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
                     int reg2 = processor.Registers[parameters[1]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 << reg2;
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
-            { 0x15, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x15, new AssemblerInstruction("shr", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 >> parameters[1];
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
 
-            { 0x16, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x16, new AssemblerInstruction("shl", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
 
                     processor.Registers[parameters[0]].Value = reg1 << parameters[1];
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
                 }
             )},
             #endregion
 
             #region Basic jumps
-            { 0x17, new AssemblerInstruction((instruction, context, parameters) => // br
+            { 0x17, new AssemblerInstruction("br", (instruction, context, parameters) => // br
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     processor.ProgramCounter.Jump(parameters[0]);
                 }
             )},
 
-            { 0x18, new AssemblerInstruction((instruction, context, parameters) => // jmp
+            { 0x18, new AssemblerInstruction("jmp", (instruction, context, parameters) => // jmp
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     processor.ProgramCounter.Branch(parameters[0]);
-                }
+                }, true
             )},
             #endregion
 
             #region Stack operations
-            { 0x19, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x19, new AssemblerInstruction("push", (instruction, context, parameters) =>
                 {
-                    var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
                     processor.StackPointer.Push(processor.Registers[parameters[0]].Value);
                 }
             )},
 
-            { 0x1A, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x1A, new AssemblerInstruction("pop", (instruction, context, parameters) =>
                 {
-                    var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    processor.Registers[parameters[0]].Value = processor.StackPointer.Pop();
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+                    processor.Registers[parameters[0]].Value = processor.StackPointer.Pop<int>();
                 }
             )},
             #endregion
 
             #region Conditional jumps, conditions
-            { 0x1B, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x1B, new AssemblerInstruction("cmp", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    processor.SetFlag(FlagType.EQUAL, processor.Registers[parameters[0]].Value == parameters[1]);
-                    processor.SetFlag(FlagType.ZERO, processor.Registers[parameters[0]].Value == 0);
-                    processor.SetFlag(FlagType.GREATER, processor.Registers[parameters[0]].Value > parameters[1]);
+                    processor.SetFlag(FlagType.Equal, processor.Registers[parameters[0]].Value == parameters[1]);
+                    processor.SetFlag(FlagType.Zero, processor.Registers[parameters[0]].Value == 0);
+                    processor.SetFlag(FlagType.Greater, processor.Registers[parameters[0]].Value > parameters[1]);
                 }
             )},
 
-            { 0x1C, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x1C, new AssemblerInstruction("je", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if(processor.GetFlag(FlagType.EQUAL))
-                        processor.Registers[31].Value += parameters[0];
-                }
+                    if(processor.GetFlag(FlagType.Equal))
+                        processor.ProgramCounter.Branch(parameters[0]);
+                }, true
             )},
 
-            { 0x1D, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x1D, new AssemblerInstruction("jz", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (processor.GetFlag(FlagType.ZERO))
-                        processor.Registers[31].Value += parameters[0];
-                }
+                    if (processor.GetFlag(FlagType.Zero))
+                        processor.ProgramCounter.Branch(parameters[0]);
+                }, true
             )},
 
-            { 0x1E, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x1E, new AssemblerInstruction("jne", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (!processor.GetFlag(FlagType.EQUAL))
-                        processor.Registers[31].Value += parameters[0];
-                }
+                    if (!processor.GetFlag(FlagType.Equal))
+                        processor.ProgramCounter.Branch(parameters[0]);
+                }, true
             )},
 
-            { 0x1F, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x1F, new AssemblerInstruction("jnz", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (!processor.GetFlag(FlagType.ZERO))
+                    if (!processor.GetFlag(FlagType.Zero))
                         processor.Registers[31].Value += parameters[0];
-                }
+                }, true
             )},
 
-            { 0x20, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x20, new AssemblerInstruction("jgr", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (processor.GetFlag(FlagType.GREATER))
-                        processor.Registers[31].Value += parameters[0];
-                }
+                    if (processor.GetFlag(FlagType.Greater))
+                        processor.ProgramCounter.Branch(parameters[0]);
+                }, true
             )},
 
-            { 0x21, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x21, new AssemblerInstruction("jlo", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (!processor.GetFlag(FlagType.GREATER) && !processor.GetFlag(FlagType.EQUAL))
+                    if (!processor.GetFlag(FlagType.Greater) && !processor.GetFlag(FlagType.Equal))
                         processor.Registers[31].Value += parameters[0];
-                }
+                }, true
             )},
 
-            { 0x22, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x22, new AssemblerInstruction("jeg", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (processor.GetFlag(FlagType.GREATER) || processor.GetFlag(FlagType.EQUAL))
+                    if (processor.GetFlag(FlagType.Greater) || processor.GetFlag(FlagType.Equal))
                         processor.Registers[31].Value += parameters[0];
-                }
+                }, true
             )},
 
-            { 0x23, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x23, new AssemblerInstruction("jel", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (!processor.GetFlag(FlagType.GREATER))
+                    if (!processor.GetFlag(FlagType.Greater))
                         processor.Registers[31].Value += parameters[0];
-                }
+                }, true
             )},
             #endregion
 
             #region Additional operations
 
-            { 0x24, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0xD, new AssemblerInstruction("lidt", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    processor.StackPointer.Push(processor.Registers[31].Value);
-                    processor.Registers[31].Value += parameters[0];
+                    processor.InterruptDescriptorTablePointer.Address = processor.Registers[parameters[0]].Value;
                 }
             )},
 
-            { 0x25, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x24, new AssemblerInstruction("call", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    processor.Registers[31].Value = processor.StackPointer.Pop();
+                    processor.ProgramCounter.Call(processor.ProgramCounter.Address + parameters[0]);
                 }
             )},
 
-            { 0x26, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x25, new AssemblerInstruction("ret", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
+                    processor.ProgramCounter.Return();
+                }
+            )},
+
+            { 0x26, new AssemblerInstruction("halt", (instruction, context, parameters) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
                     processor.Abort();
                 }
             )},
 
-            { 0x2B, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x2B, new AssemblerInstruction("int", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     //InterruptAction.Invoke(parameters[0]);
                 }
             )},
 
-            { 0x31, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x31, new AssemblerInstruction("int", (instruction, context, parameters) =>
                 {
                     var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
                     int reg1 = processor.Registers[parameters[0]].Value;
@@ -415,56 +430,226 @@ namespace DestroyNobots.Computers
 
             #region Memory operations
 
-            { 0x2C, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x2C, new AssemblerInstruction<Register<int>, IPointer>("mov", (instruction, context, register, pointer) =>
                 {
-                    var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (parameters[2] == 1)
-                        processor.Registers[parameters[0]].Value = processor.Computer.Memory.Read<byte>(parameters[1]);
-                    else if (parameters[2] == 2)
-                        processor.Registers[parameters[0]].Value = processor.Computer.Memory.Read<short>(parameters[1]);
-                    else if (parameters[2] == 4)
-                        processor.Registers[parameters[0]].Value = processor.Computer.Memory.Read<int>(parameters[1]);
+                    if (pointer.Size == 1)
+                        register.Value = pointer.As<byte>().GetValue();
+                    else if (pointer.Size == 2)
+                        register.Value = pointer.As<short>().GetValue();
+                    else if (pointer.Size == 4)
+                        register.Value = pointer.As<int>().GetValue();
+                    else
+                        throw new Exception("Register too small");
                 }
             )},
 
 
-            { 0x2D, new AssemblerInstruction((instruction, context, parameters) =>
+            { 0x2D, new AssemblerInstruction<IPointer, Register<int>>("mov", (instruction, context, pointer, register) =>
                 {
-                    var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (parameters[2] == 1)
-                        processor.Computer.Memory.Write<byte>(parameters[0], (byte)processor.Registers[parameters[1]].Value);
-                    else if (parameters[2] == 2)
-                        processor.Computer.Memory.Write<short>(parameters[0], (short)processor.Registers[parameters[1]].Value);
-                    else if (parameters[2] == 4)
-                        processor.Computer.Memory.Write<int>(parameters[0], processor.Registers[parameters[1]].Value);
+                    if (pointer.Size == 1)
+                        pointer.As<byte>().SetValue((byte)register.Value);
+                    else if (pointer.Size == 2)
+                        pointer.As<short>().SetValue((short)register.Value);
+                    else if (pointer.Size == 4)
+                        pointer.As<int>().SetValue(register.Value);
+                    else if (pointer.Size == 8)
+                        pointer.As<long>().SetValue(register.Value);
                 }
             )},
 
-            { 0x2E, new AssemblerInstruction((instruction, context, parameters) =>
-               {
-                    var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    if (parameters[2] == 1)
-                        processor.Computer.Memory.Write<byte>(parameters[0], (byte)parameters[1]);
-                    else if (parameters[2] == 2)
-                        processor.Computer.Memory.Write<short>(parameters[0], (short)parameters[1]);
-                    else if (parameters[2] == 4)
-                        processor.Computer.Memory.Write<int>(parameters[0], parameters[1]);
+            { 0x2E, new AssemblerInstruction<IPointer, ImmediateValue>("mov", (instruction, context, pointer, value) =>
+                {
+                    if(pointer.Size == 1)
+                        pointer.As<byte>().SetValue(value.ToByte(null));
+                    if(pointer.Size == 2)
+                        pointer.As<short>().SetValue(value.ToInt16(null));
+                    if(pointer.Size == 4)
+                        pointer.As<int>().SetValue(value.ToInt32(null));
+                    if(pointer.Size == 8)
+                        pointer.As<long>().SetValue(value.ToInt64(null));
                }
             )},
+            #endregion
 
-            { 0x2F, new AssemblerInstruction((instruction, context, parameters) =>
-               {
-                    var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    processor.Computer.Memory.Write<int>(parameters[0], processor.Registers[parameters[1]].Value);
-               }
-            )},
-
-            { 0x30, new AssemblerInstruction((instruction, context, parameters) =>
+            #region I/O Operations
+            { 0x32, new AssemblerInstruction("out", (instruction, context, parameters) =>
                 {
-                    var processor = context.GetContext<Assembler.Emulator.Computer>().GetSpecificProcessor<VCM86Processor>();
-                    processor.Registers[parameters[0]].Value = processor.Computer.Memory.Read<int>(parameters[1]);
+                    var computer = context.GetContext<Computer>();
+
+                    if(computer.Ports.ContainsKey((ushort)parameters[0]))
+                    {
+                        computer.Ports[(ushort)parameters[0]].Out(parameters[1], 4);
+                    }
                 }
             )},
+
+            { 0x33, new AssemblerInstruction<ImmediateValue, Register<int>>("out", (instruction, context, value, register) =>
+                {
+                    var computer = context.GetContext<Computer>();
+
+                    if(computer.Ports.ContainsKey(value.ToUInt16(null)))
+                    {
+                        computer.Ports[value.ToUInt16(null)].Out(register.Value, register.Size);
+                    }
+                }
+            )},
+
+            { 0x34, new AssemblerInstruction("in", (instruction, context, parameters) =>
+                {
+                    var computer = context.GetContext<Computer>();
+                    var processor = computer.GetSpecificProcessor<VCM86Processor>();
+                    var register = processor.Registers[parameters[1]];
+
+                    if(computer.Ports.ContainsKey((ushort)parameters[0]))
+                    {
+                        register.Value = (int)computer.Ports[(ushort)parameters[0]].In(register.Size);
+                    }
+                }
+            )},
+            #endregion
+
+            #region Float-point operations
+            { 0x80, new AssemblerInstruction<ImmediateValue>("fld", (instruction, context, value) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(value.ToDouble(null));
+                }
+            )},
+            { 0x81, new AssemblerInstruction<IRegister>("fld", (instruction, context, register) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(register.Value.ToDouble(null));
+                }
+            )},
+            { 0x82, new AssemblerInstruction<IRegister>("fst", (instruction, context, register) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    if(register is Register<double>)
+                        ((Register<double>)register).Value = processor.Coprocessor.GetRegister(0).Value;
+                    else
+                        ((Register<int>)register).Value = (int)processor.Coprocessor.GetRegister(0).Value;
+                }
+            )},
+            { 0x83, new AssemblerInstruction<IPointer>("fst", (instruction, context, pointer) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    if(pointer.Size == 4)
+                        pointer.As<float>().SetValue((float)processor.Coprocessor.GetRegister(0).Value);
+                    else if(pointer.Size == 8)
+                        pointer.As<double>().SetValue(processor.Coprocessor.GetRegister(0).Value);
+                }
+            )},
+            { 0x84, new AssemblerInstruction("fadd", (instruction, context, parameters) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(processor.Coprocessor.Pop() + processor.Coprocessor.Pop());
+                }
+            )},
+            { 0x85, new AssemblerInstruction<ImmediateValue>("fadd", (instruction, context, value) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(processor.Coprocessor.Pop() + value.ToDouble(null));
+                }
+            )},
+            { 0x86, new AssemblerInstruction("fsub", (instruction, context, parameters) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(processor.Coprocessor.Pop() - processor.Coprocessor.Pop());
+                }
+            )},
+            { 0x87, new AssemblerInstruction<ImmediateValue>("fsub", (instruction, context, value) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(processor.Coprocessor.Pop() - value.ToDouble(null));
+                }
+            )},
+            { 0x88, new AssemblerInstruction("fmul", (instruction, context, parameters) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(processor.Coprocessor.Pop() * processor.Coprocessor.Pop());
+                }
+            )},
+            { 0x89, new AssemblerInstruction<ImmediateValue>("fmul", (instruction, context, value) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(processor.Coprocessor.Pop() * value.ToDouble(null));
+                }
+            )},
+            { 0x8A, new AssemblerInstruction("fdiv", (instruction, context, parameters) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(processor.Coprocessor.Pop() / processor.Coprocessor.Pop());
+                }
+            )},
+            { 0x8B, new AssemblerInstruction<ImmediateValue>("fdiv", (instruction, context, value) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Push(processor.Coprocessor.Pop() / value.ToDouble(null));
+                }
+            )},
+            { 0x8C, new AssemblerInstruction<IPointer>("fld", (instruction, context, pointer) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    if(pointer.Size == 4)
+                        processor.Coprocessor.Push(pointer.As<float>().GetValue());
+                    else if(pointer.Size == 8)
+                        processor.Coprocessor.Push(pointer.As<double>().GetValue());
+                }
+            )},
+            { 0x8D, new AssemblerInstruction<IPointer>("fild", (instruction, context, pointer) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    if(pointer.Size == 1)
+                        processor.Coprocessor.Push(pointer.As<byte>().GetValue());
+                    else if(pointer.Size == 2)
+                        processor.Coprocessor.Push(pointer.As<short>().GetValue());
+                    else if(pointer.Size == 4)
+                        processor.Coprocessor.Push(pointer.As<int>().GetValue());
+                    else if(pointer.Size == 8)
+                        processor.Coprocessor.Push(pointer.As<long>().GetValue());
+                }
+            )},
+            { 0x8E, new AssemblerInstruction("fcmp", (instruction, context, parameters) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.SetFlag(FlagType.Equal, processor.Coprocessor.GetRegister(0).Value == processor.Coprocessor.GetRegister(1).Value);
+                    processor.SetFlag(FlagType.Zero, processor.Coprocessor.GetRegister(0).Value == 0);
+                    processor.SetFlag(FlagType.Greater, processor.Coprocessor.GetRegister(0).Value > processor.Coprocessor.GetRegister(1).Value);
+                }
+            )},
+            { 0x8F, new AssemblerInstruction<Register<double>, IPointer>("fmov", (instruction, context, register, pointer) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    if(pointer.Size == 4)
+                        register.Value = pointer.As<float>().GetValue();
+                    else if(pointer.Size == 8)
+                        register.Value = pointer.As<double>().GetValue();
+                }
+            )},
+            { 0x90, new AssemblerInstruction("fdst", (instruction, context, parameters) =>
+                {
+                    var processor = context.GetContext<Computer>().GetSpecificProcessor<VCM86Processor>();
+
+                    processor.Coprocessor.Pop();
+                }
+            )},
+
             #endregion
         };
     }

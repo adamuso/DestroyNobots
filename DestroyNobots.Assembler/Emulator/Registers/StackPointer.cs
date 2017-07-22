@@ -2,15 +2,14 @@
 
 namespace DestroyNobots.Assembler.Emulator.Registers
 {
-    public class StackPointer<T> 
-        where T : struct, IConvertible
+    public class StackPointer : IStackPointer
     {
-        private Processor<T> processor;
-        private Register<T> register;
+        private IProcessorBase processor;
+        private IRegister register;
         private uint stackMemoryStart;
         private uint stackSize;
 
-        public StackPointer(Processor<T> processor, Register<T> register, uint stackMemoryStart, uint stackSize)
+        public StackPointer(IProcessorBase processor, IRegister register, uint stackMemoryStart, uint stackSize)
         {
             this.processor = processor;
             this.register = register;
@@ -18,23 +17,37 @@ namespace DestroyNobots.Assembler.Emulator.Registers
             this.stackSize = stackSize;
         }
 
-        public void Push(T value)
+        public void Set(uint stackMemoryStart, uint stackSize)
         {
-            processor.Computer.Memory.Write(register.Value.ToUInt32(null), value);
-            register.Increment();
-
-            if (register.Value.ToUInt32(null) > stackMemoryStart + stackSize * 4)
-                throw new Exception("Stack overflow!");
+            this.stackMemoryStart = stackMemoryStart;
+            this.stackSize = stackSize;
         }
 
-        public T Pop()
+        public void Push<T1>(T1 value) where T1 : struct
         {
-            register.Decrement();
+            uint size = processor.Context.Memory.Write(register.Value.ToUInt32(null), value);
+            register.Add(size);
 
+            if (register.Value.ToUInt32(null) > stackMemoryStart + stackSize * 4)
+            {
+                processor.Interrupt(2);
+                throw new Exception("Stack overflow!");
+            }
+        }
+
+        public T1 Pop<T1>() where T1 : struct
+        {
             if (register.Value.ToUInt32(null) < stackMemoryStart)
+            {
+                processor.Interrupt(3);
                 throw new Exception("Stack underflow!");
+            }
 
-            return processor.Computer.Memory.Read<T>(register.Value.ToUInt32(null));
+            uint size;
+            T1 value = processor.Context.Memory.Read<T1>(register.Value.ToUInt32(null), out size);
+            register.Substract(size);
+
+            return value;
         }
     }
 }
